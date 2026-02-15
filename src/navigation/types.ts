@@ -1,0 +1,49 @@
+import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import type { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
+import type { CompositeScreenProps, NavigatorScreenParams } from '@react-navigation/native';
+
+// Auth stack
+export type AuthStackParamList = {
+  Login: undefined;
+  Register: undefined;
+};
+
+// Room stack (nested inside Rooms tab)
+export type RoomStackParamList = {
+  RoomList: undefined;
+  RoomDetail: { roomId: string };
+  CreateBooking: { roomId: string; roomName: string };
+};
+
+// Booking stack (nested inside My Bookings tab)
+export type BookingStackParamList = {
+  BookingList: undefined;
+  BookingDetail: { bookingId: string };
+};
+
+// Main tab navigator
+export type MainTabParamList = {
+  Dashboard: undefined;
+  Rooms: NavigatorScreenParams<RoomStackParamList>;
+  MyBookings: NavigatorScreenParams<BookingStackParamList>;
+  Settings: undefined;
+};
+
+// Root navigator
+export type RootStackParamList = {
+  Auth: NavigatorScreenParams<AuthStackParamList>;
+  Main: NavigatorScreenParams<MainTabParamList>;
+};
+
+// Screen props helpers
+export type AuthScreenProps<T extends keyof AuthStackParamList> =
+  NativeStackScreenProps<AuthStackParamList, T>;
+
+export type MainTabScreenProps<T extends keyof MainTabParamList> =
+  BottomTabScreenProps<MainTabParamList, T>;
+
+export type RoomScreenProps<T extends keyof RoomStackParamList> =
+  NativeStackScreenProps<RoomStackParamList, T>;
+
+export type BookingScreenProps<T extends keyof BookingStackParamList> =
+  NativeStackScreenProps<BookingStackParamList, T>;
