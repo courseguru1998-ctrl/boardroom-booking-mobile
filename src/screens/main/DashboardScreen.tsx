@@ -28,8 +28,15 @@ export function DashboardScreen({ navigation }: MainTabScreenProps<'Dashboard'>)
 
   const bookings = data?.data || [];
 
+  const handleBookingPress = (booking: Booking) => {
+    navigation.navigate('MyBookings', {
+      screen: 'BookingDetail',
+      params: { bookingId: booking.id },
+    });
+  };
+
   const renderBookingCard = (booking: Booking) => (
-    <Card key={booking.id} style={styles.bookingCard}>
+    <Card key={booking.id} style={styles.bookingCard} onPress={() => handleBookingPress(booking)}>
       <View style={styles.bookingHeader}>
         <View style={{ flex: 1 }}>
           <Text style={[styles.bookingTitle, { color: colors.text }]} numberOfLines={1}>

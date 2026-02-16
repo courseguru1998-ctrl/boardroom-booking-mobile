@@ -9,6 +9,7 @@ import { MyBookingsScreen } from '../screens/main/MyBookingsScreen';
 import { SettingsScreen } from '../screens/settings/SettingsScreen';
 import { RoomDetailScreen } from '../screens/booking/RoomDetailScreen';
 import { CreateBookingScreen } from '../screens/booking/CreateBookingScreen';
+import { BookingDetailScreen } from '../screens/booking/BookingDetailScreen';
 import type { MainTabParamList, RoomStackParamList, BookingStackParamList } from './types';
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
@@ -60,6 +61,11 @@ function BookingStackNavigator() {
         name="BookingList"
         component={MyBookingsScreen}
         options={{ title: 'My Bookings' }}
+      />
+      <BookingStack.Screen
+        name="BookingDetail"
+        component={BookingDetailScreen}
+        options={{ title: 'Booking Details' }}
       />
     </BookingStack.Navigator>
   );

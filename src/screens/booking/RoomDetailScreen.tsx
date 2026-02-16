@@ -5,10 +5,12 @@ import {
   ScrollView,
   StyleSheet,
   ActivityIndicator,
+  TouchableOpacity,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../hooks/useTheme';
 import { useRoom } from '../../hooks/useRooms';
+import { useFavoriteIds, useToggleFavorite } from '../../hooks/useFavorites';
 import { Button, Card } from '../../components/common';
 import type { RoomScreenProps } from '../../navigation/types';
 
@@ -30,8 +32,17 @@ export function RoomDetailScreen({ route, navigation }: RoomScreenProps<'RoomDet
   const { roomId } = route.params;
   const { colors } = useTheme();
   const { data, isLoading } = useRoom(roomId);
+  const { data: favoriteIdsData } = useFavoriteIds();
+  const toggleFavorite = useToggleFavorite();
 
   const room = data?.data;
+  const favoriteIds = favoriteIdsData?.data || [];
+  const isFavorited = room ? favoriteIds.includes(room.id) : false;
+
+  const handleToggleFavorite = () => {
+    if (!room) return;
+    toggleFavorite.mutate({ roomId: room.id, isFavorited });
+  };
 
   if (isLoading) {
     return (
@@ -55,6 +66,17 @@ export function RoomDetailScreen({ route, navigation }: RoomScreenProps<'RoomDet
         {/* Room Header */}
         <View style={[styles.headerBanner, { backgroundColor: colors.primaryLight }]}>
           <Ionicons name="business" size={48} color={colors.primary} />
+          {/* Favorite Button */}
+          <TouchableOpacity
+            onPress={handleToggleFavorite}
+            style={[styles.favButton, { backgroundColor: colors.card }]}
+          >
+            <Ionicons
+              name={isFavorited ? 'heart' : 'heart-outline'}
+              size={24}
+              color={isFavorited ? '#EF4444' : colors.textTertiary}
+            />
+          </TouchableOpacity>
         </View>
 
         <View style={styles.infoSection}>
@@ -137,92 +159,24 @@ export function RoomDetailScreen({ route, navigation }: RoomScreenProps<'RoomDet
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  scrollContent: {
-    paddingBottom: 100,
-  },
-  headerBanner: {
-    height: 160,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  infoSection: {
-    padding: 20,
-  },
-  roomName: {
-    fontSize: 24,
-    fontWeight: '700',
-    marginBottom: 8,
-  },
-  locationRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  locationText: {
-    fontSize: 15,
-  },
-  detailsCard: {
-    marginHorizontal: 20,
-    marginBottom: 20,
-  },
-  detailRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-  },
-  detailItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-  },
-  detailLabel: {
-    fontSize: 12,
-  },
-  detailValue: {
-    fontSize: 15,
-    fontWeight: '600',
-  },
-  section: {
-    paddingHorizontal: 20,
-    marginBottom: 20,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    marginBottom: 12,
-  },
-  amenitiesGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-  amenityItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    borderRadius: 10,
-  },
-  amenityName: {
-    fontSize: 13,
-    fontWeight: '500',
-    textTransform: 'capitalize',
-  },
-  bookBar: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    padding: 20,
-    paddingBottom: 36,
-    borderTopWidth: 1,
-  },
+  container: { flex: 1 },
+  loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+  scrollContent: { paddingBottom: 100 },
+  headerBanner: { height: 160, justifyContent: 'center', alignItems: 'center', position: 'relative' },
+  favButton: { position: 'absolute', top: 16, right: 16, width: 44, height: 44, borderRadius: 22, justifyContent: 'center', alignItems: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4, elevation: 3 },
+  infoSection: { padding: 20 },
+  roomName: { fontSize: 24, fontWeight: '700', marginBottom: 8 },
+  locationRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  locationText: { fontSize: 15 },
+  detailsCard: { marginHorizontal: 20, marginBottom: 20 },
+  detailRow: { flexDirection: 'row', justifyContent: 'space-around' },
+  detailItem: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  detailLabel: { fontSize: 12 },
+  detailValue: { fontSize: 15, fontWeight: '600' },
+  section: { paddingHorizontal: 20, marginBottom: 20 },
+  sectionTitle: { fontSize: 18, fontWeight: '600', marginBottom: 12 },
+  amenitiesGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  amenityItem: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 12, paddingVertical: 10, borderRadius: 10 },
+  amenityName: { fontSize: 13, fontWeight: '500', textTransform: 'capitalize' },
+  bookBar: { position: 'absolute', bottom: 0, left: 0, right: 0, padding: 20, paddingBottom: 36, borderTopWidth: 1 },
 });

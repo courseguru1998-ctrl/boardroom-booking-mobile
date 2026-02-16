@@ -3,3 +3,4 @@ export { Input } from './Input';
 export { Card } from './Card';
 export { LoadingScreen } from './LoadingScreen';
 export { StatusBadge } from './StatusBadge';
+export { ErrorBoundary } from './ErrorBoundary';

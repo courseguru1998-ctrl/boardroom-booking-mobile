@@ -13,11 +13,12 @@ import { useTheme } from '../../hooks/useTheme';
 import { useMyBookings, useCancelBooking } from '../../hooks/useBookings';
 import { Card, StatusBadge } from '../../components/common';
 import { formatBookingDate, formatBookingTime } from '../../utils/date';
+import type { BookingScreenProps } from '../../navigation/types';
 import type { Booking } from '../../types';
 
 type TabKey = 'upcoming' | 'past';
 
-export function MyBookingsScreen() {
+export function MyBookingsScreen({ navigation }: BookingScreenProps<'BookingList'>) {
   const { colors } = useTheme();
   const [activeTab, setActiveTab] = useState<TabKey>('upcoming');
   const cancelBooking = useCancelBooking();
@@ -48,8 +49,15 @@ export function MyBookingsScreen() {
     );
   };
 
+  const handleBookingPress = (booking: Booking) => {
+    navigation.navigate('BookingDetail', { bookingId: booking.id });
+  };
+
   const renderBooking = ({ item: booking }: { item: Booking }) => (
-    <Card style={styles.bookingCard}>
+    <Card
+      onPress={() => handleBookingPress(booking)}
+      style={styles.bookingCard}
+    >
       <View style={styles.bookingHeader}>
         <View style={{ flex: 1 }}>
           <Text style={[styles.bookingTitle, { color: colors.text }]} numberOfLines={1}>
@@ -143,85 +151,21 @@ export function MyBookingsScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  tabs: {
-    flexDirection: 'row',
-    borderBottomWidth: 1,
-    paddingHorizontal: 16,
-  },
-  tab: {
-    flex: 1,
-    paddingVertical: 14,
-    alignItems: 'center',
-  },
-  tabText: {
-    fontSize: 15,
-    fontWeight: '600',
-  },
-  listContent: {
-    padding: 16,
-    gap: 12,
-  },
-  bookingCard: {
-    marginBottom: 0,
-  },
-  bookingHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 12,
-  },
-  bookingTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    marginBottom: 4,
-  },
-  bookingMeta: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  bookingRoom: {
-    fontSize: 13,
-  },
-  timeRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    borderRadius: 8,
-    padding: 10,
-    marginBottom: 8,
-  },
-  timeItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  timeText: {
-    fontSize: 13,
-    fontWeight: '500',
-  },
-  cancelButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 6,
-    borderWidth: 1,
-    borderRadius: 8,
-    paddingVertical: 8,
-    marginTop: 4,
-  },
-  cancelText: {
-    fontSize: 13,
-    fontWeight: '600',
-  },
-  emptyContainer: {
-    alignItems: 'center',
-    paddingTop: 80,
-    gap: 12,
-  },
-  emptyText: {
-    fontSize: 16,
-  },
+  container: { flex: 1 },
+  tabs: { flexDirection: 'row', borderBottomWidth: 1, paddingHorizontal: 16 },
+  tab: { flex: 1, paddingVertical: 14, alignItems: 'center' },
+  tabText: { fontSize: 15, fontWeight: '600' },
+  listContent: { padding: 16, gap: 12 },
+  bookingCard: { marginBottom: 0 },
+  bookingHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 },
+  bookingTitle: { fontSize: 16, fontWeight: '600', marginBottom: 4 },
+  bookingMeta: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  bookingRoom: { fontSize: 13 },
+  timeRow: { flexDirection: 'row', justifyContent: 'space-between', borderRadius: 8, padding: 10, marginBottom: 8 },
+  timeItem: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  timeText: { fontSize: 13, fontWeight: '500' },
+  cancelButton: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, borderWidth: 1, borderRadius: 8, paddingVertical: 8, marginTop: 4 },
+  cancelText: { fontSize: 13, fontWeight: '600' },
+  emptyContainer: { alignItems: 'center', paddingTop: 80, gap: 12 },
+  emptyText: { fontSize: 16 },
 });
