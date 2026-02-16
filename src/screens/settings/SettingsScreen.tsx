@@ -9,15 +9,25 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
+import type { SettingsScreenProps } from '../../navigation/types';
 import { useTheme } from '../../hooks/useTheme';
 import { useAuth } from '../../hooks/useAuth';
 import { Card } from '../../components/common';
 
 type ThemeMode = 'light' | 'dark' | 'system';
 
-export function SettingsScreen() {
+// Admin roles that can access analytics
+const ADMIN_ROLES = ['ADMIN', 'CAMPUS_ADMIN', 'SUPER_ADMIN'];
+const SUPER_ADMIN_ROLE = 'SUPER_ADMIN';
+
+export function SettingsScreen({ navigation }: SettingsScreenProps<'SettingsMain'>) {
   const { colors, mode, setMode, isDark } = useTheme();
   const { user, logout } = useAuth();
+
+  // Check if user is admin
+  const isAdmin = user?.role && ADMIN_ROLES.includes(user.role);
+  const isSuperAdmin = user?.role === SUPER_ADMIN_ROLE;
 
   const handleLogout = () => {
     Alert.alert('Logout', 'Are you sure you want to sign out?', [
@@ -153,6 +163,54 @@ export function SettingsScreen() {
           <View style={[styles.divider, { backgroundColor: colors.border }]} />
           {renderSettingRow('shield-outline', 'Role', user?.role?.toLowerCase())}
         </Card>
+
+        {/* Admin Section - only visible to admins */}
+        {isAdmin && (
+          <>
+            <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>
+              ADMIN
+            </Text>
+            <Card style={styles.sectionCard} padding={0}>
+              {renderSettingRow(
+                'analytics-outline',
+                'Analytics',
+                undefined,
+                () => navigation.navigate('Analytics')
+              )}
+              <View style={[styles.divider, { backgroundColor: colors.border }]} />
+              {renderSettingRow(
+                'people-outline',
+                'User Management',
+                undefined,
+                () => navigation.navigate('Users')
+              )}
+              <View style={[styles.divider, { backgroundColor: colors.border }]} />
+              {renderSettingRow(
+                'business-outline',
+                'Room Management',
+                undefined,
+                () => navigation.navigate('RoomsManage')
+              )}
+            </Card>
+          </>
+        )}
+
+        {/* Super Admin Section - only visible to super admins */}
+        {isSuperAdmin && (
+          <>
+            <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>
+              SUPER ADMIN
+            </Text>
+            <Card style={styles.sectionCard} padding={0}>
+              {renderSettingRow(
+                'school-outline',
+                'Campus Management',
+                undefined,
+                () => navigation.navigate('Campuses')
+              )}
+            </Card>
+          </>
+        )}
 
         {/* Logout */}
         <Card style={[styles.sectionCard, { marginTop: 24 }]} padding={0}>

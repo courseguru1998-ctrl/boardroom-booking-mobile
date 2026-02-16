@@ -21,12 +21,25 @@ export type BookingStackParamList = {
   BookingDetail: { bookingId: string };
 };
 
+// Settings stack (nested inside Settings tab)
+export type SettingsStackParamList = {
+  SettingsMain: undefined;
+  Analytics: undefined;
+  Users: undefined;
+  RoomsManage: undefined;
+  // Super Admin screens
+  Campuses: undefined;
+  CampusDetail: { campusId: string };
+};
+
 // Main tab navigator
 export type MainTabParamList = {
   Dashboard: undefined;
+  Calendar: undefined;
+  Waitlist: undefined;
   Rooms: NavigatorScreenParams<RoomStackParamList>;
   MyBookings: NavigatorScreenParams<BookingStackParamList>;
-  Settings: undefined;
+  Settings: NavigatorScreenParams<SettingsStackParamList>;
 };
 
 // Root navigator
@@ -47,3 +60,6 @@ export type RoomScreenProps<T extends keyof RoomStackParamList> =
 
 export type BookingScreenProps<T extends keyof BookingStackParamList> =
   NativeStackScreenProps<BookingStackParamList, T>;
+
+export type SettingsScreenProps<T extends keyof SettingsStackParamList> =
+  NativeStackScreenProps<SettingsStackParamList, T>;

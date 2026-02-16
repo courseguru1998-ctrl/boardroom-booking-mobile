@@ -4,17 +4,25 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../hooks/useTheme';
 import { DashboardScreen } from '../screens/main/DashboardScreen';
+import { CalendarScreen } from '../screens/main/CalendarScreen';
+import { WaitlistScreen } from '../screens/main/WaitlistScreen';
 import { RoomsScreen } from '../screens/main/RoomsScreen';
 import { MyBookingsScreen } from '../screens/main/MyBookingsScreen';
 import { SettingsScreen } from '../screens/settings/SettingsScreen';
+import { AnalyticsScreen } from '../screens/admin/AnalyticsScreen';
+import { UsersScreen } from '../screens/admin/UsersScreen';
+import { RoomsManageScreen } from '../screens/admin/RoomsManageScreen';
+import { CampusesScreen } from '../screens/super-admin/CampusesScreen';
+import { CampusDetailScreen } from '../screens/super-admin/CampusDetailScreen';
 import { RoomDetailScreen } from '../screens/booking/RoomDetailScreen';
 import { CreateBookingScreen } from '../screens/booking/CreateBookingScreen';
 import { BookingDetailScreen } from '../screens/booking/BookingDetailScreen';
-import type { MainTabParamList, RoomStackParamList, BookingStackParamList } from './types';
+import type { MainTabParamList, RoomStackParamList, BookingStackParamList, SettingsStackParamList } from './types';
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
 const RoomStack = createNativeStackNavigator<RoomStackParamList>();
 const BookingStack = createNativeStackNavigator<BookingStackParamList>();
+const SettingsStack = createNativeStackNavigator<SettingsStackParamList>();
 
 function RoomStackNavigator() {
   const { colors } = useTheme();
@@ -71,6 +79,51 @@ function BookingStackNavigator() {
   );
 }
 
+function SettingsStackNavigator() {
+  const { colors } = useTheme();
+
+  return (
+    <SettingsStack.Navigator
+      screenOptions={{
+        headerStyle: { backgroundColor: colors.background },
+        headerTintColor: colors.text,
+        headerShadowVisible: false,
+      }}
+    >
+      <SettingsStack.Screen
+        name="SettingsMain"
+        component={SettingsScreen}
+        options={{ title: 'Settings' }}
+      />
+      <SettingsStack.Screen
+        name="Analytics"
+        component={AnalyticsScreen}
+        options={{ title: 'Analytics' }}
+      />
+      <SettingsStack.Screen
+        name="Users"
+        component={UsersScreen}
+        options={{ title: 'User Management' }}
+      />
+      <SettingsStack.Screen
+        name="RoomsManage"
+        component={RoomsManageScreen}
+        options={{ title: 'Room Management' }}
+      />
+      <SettingsStack.Screen
+        name="Campuses"
+        component={CampusesScreen}
+        options={{ title: 'Campuses' }}
+      />
+      <SettingsStack.Screen
+        name="CampusDetail"
+        component={CampusDetailScreen}
+        options={{ title: 'Campus Details' }}
+      />
+    </SettingsStack.Navigator>
+  );
+}
+
 export function MainNavigator() {
   const { colors } = useTheme();
 
@@ -99,11 +152,17 @@ export function MainNavigator() {
             case 'Dashboard':
               iconName = focused ? 'home' : 'home-outline';
               break;
+            case 'Calendar':
+              iconName = focused ? 'calendar' : 'calendar-outline';
+              break;
+            case 'Waitlist':
+              iconName = focused ? 'time' : 'time-outline';
+              break;
             case 'Rooms':
               iconName = focused ? 'business' : 'business-outline';
               break;
             case 'MyBookings':
-              iconName = focused ? 'calendar' : 'calendar-outline';
+              iconName = focused ? 'list' : 'list-outline';
               break;
             case 'Settings':
               iconName = focused ? 'settings' : 'settings-outline';
@@ -115,6 +174,8 @@ export function MainNavigator() {
       })}
     >
       <Tab.Screen name="Dashboard" component={DashboardScreen} />
+      <Tab.Screen name="Calendar" component={CalendarScreen} />
+      <Tab.Screen name="Waitlist" component={WaitlistScreen} />
       <Tab.Screen
         name="Rooms"
         component={RoomStackNavigator}
@@ -125,7 +186,11 @@ export function MainNavigator() {
         component={BookingStackNavigator}
         options={{ title: 'Bookings' }}
       />
-      <Tab.Screen name="Settings" component={SettingsScreen} />
+      <Tab.Screen
+        name="Settings"
+        component={SettingsStackNavigator}
+        options={{ title: 'Settings' }}
+      />
     </Tab.Navigator>
   );
 }
