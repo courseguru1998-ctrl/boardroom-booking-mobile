@@ -40,3 +40,10 @@ yarn-error.*
 # generated native folders
 /ios
 /android
+
+# APK files
+*.apk
+*.aab
+
+# Android local SDK path
+android/local.properties
