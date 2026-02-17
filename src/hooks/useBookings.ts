@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { bookingsApi, type BookingFilters, type CreateBookingData } from '../services/bookings';
+import { bookingsApi, type BookingFilters, type CreateBookingData, type UpdateBookingData } from '../services/bookings';
 import { Alert } from 'react-native';
 
 export function useMyBookings(filters: Omit<BookingFilters, 'userId'> = {}) {
@@ -51,6 +51,23 @@ export function useCancelBooking() {
     },
     onError: (error: any) => {
       const message = error.response?.data?.message || 'Failed to cancel booking';
+      Alert.alert('Error', message);
+    },
+  });
+}
+
+export function useUpdateBooking() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: UpdateBookingData }) =>
+      bookingsApi.update(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['bookings'] });
+      Alert.alert('Success', 'Booking updated successfully!');
+    },
+    onError: (error: any) => {
+      const message = error.response?.data?.message || 'Failed to update booking';
       Alert.alert('Error', message);
     },
   });

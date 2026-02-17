@@ -246,7 +246,7 @@ export function CampusesScreen({ navigation }: any) {
             </Text>
           </View>
           <View style={styles.statItem}>
-            <Ionicons name="door-open-outline" size={16} color={colors.textTertiary} />
+            <Ionicons name="business-outline" size={16} color={colors.textTertiary} />
             <Text style={[styles.statText, { color: colors.textSecondary }]}>
               {campus._count?.rooms || 0} rooms
             </Text>

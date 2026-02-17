@@ -5,6 +5,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { RootNavigator } from './src/navigation/RootNavigator';
 import { ErrorBoundary } from './src/components/common';
+import { ToastContainer } from './src/components/common/Toast';
 import { useThemeStore } from './src/store/theme';
 import { config } from './src/constants/config';
 
@@ -27,6 +28,7 @@ export default function App() {
         <SafeAreaProvider>
           <QueryClientProvider client={queryClient}>
             <RootNavigator />
+            <ToastContainer />
             <StatusBar style={effectiveTheme === 'dark' ? 'light' : 'dark'} />
           </QueryClientProvider>
         </SafeAreaProvider>

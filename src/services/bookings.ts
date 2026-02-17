@@ -66,4 +66,11 @@ export const bookingsApi = {
     const response = await api.delete(`/bookings/${id}`);
     return response.data;
   },
+
+  downloadPdf: async (id: string): Promise<Blob> => {
+    const response = await api.get(`/bookings/${id}/pdf`, {
+      responseType: 'blob',
+    });
+    return response.data;
+  },
 };

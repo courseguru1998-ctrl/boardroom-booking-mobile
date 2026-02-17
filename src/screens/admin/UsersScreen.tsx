@@ -261,7 +261,7 @@ export function UsersScreen() {
           <View style={styles.actionButtons}>
             <Button
               title="Reject"
-              variant="danger"
+              variant="destructive"
               size="sm"
               loading={isActionLoading}
               onPress={() => handleReject(userItem.id)}

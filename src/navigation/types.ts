@@ -19,6 +19,7 @@ export type RoomStackParamList = {
 export type BookingStackParamList = {
   BookingList: undefined;
   BookingDetail: { bookingId: string };
+  EditBooking: { bookingId: string };
 };
 
 // Settings stack (nested inside Settings tab)
@@ -36,6 +37,7 @@ export type SettingsStackParamList = {
 export type MainTabParamList = {
   Dashboard: undefined;
   Calendar: undefined;
+  AIAssistant: undefined;
   Waitlist: undefined;
   Rooms: NavigatorScreenParams<RoomStackParamList>;
   MyBookings: NavigatorScreenParams<BookingStackParamList>;

@@ -18,6 +18,9 @@ interface InputProps extends Omit<TextInputProps, 'style'> {
   rightIcon?: keyof typeof Ionicons.glyphMap;
   onRightIconPress?: () => void;
   containerStyle?: ViewStyle;
+  /** For multiline text areas */
+  multiline?: boolean;
+  numberOfLines?: number;
 }
 
 export function Input({
@@ -27,6 +30,8 @@ export function Input({
   rightIcon,
   onRightIconPress,
   containerStyle,
+  multiline = false,
+  numberOfLines = 1,
   secureTextEntry,
   ...props
 }: InputProps) {
@@ -41,10 +46,11 @@ export function Input({
       {label && (
         <Text
           style={{
+            // Match web app: text-sm font-medium
             fontSize: 14,
             fontWeight: '500',
             color: colors.text,
-            marginBottom: 6,
+            marginBottom: 8,
           }}
         >
           {label}
@@ -53,37 +59,45 @@ export function Input({
       <View
         style={{
           flexDirection: 'row',
-          alignItems: 'center',
-          borderWidth: 1.5,
+          alignItems: multiline ? 'flex-start' : 'center',
+          // Match web app: border-2, rounded-xl
+          borderWidth: 2,
           borderColor: error
-            ? colors.error
+            ? colors.destructive
             : isFocused
             ? colors.borderFocused
-            : colors.border,
-          borderRadius: 12,
+            : colors.input,
+          borderRadius: 14,
           backgroundColor: colors.surface,
-          paddingHorizontal: 12,
+          paddingHorizontal: 16,
+          paddingVertical: multiline ? 12 : 0,
+          minHeight: multiline ? numberOfLines * 24 + 24 : 52,
         }}
       >
         {leftIcon && (
           <Ionicons
             name={leftIcon}
             size={20}
-            color={colors.textTertiary}
-            style={{ marginRight: 8 }}
+            color={isFocused ? colors.primary : colors.textTertiary}
+            style={{ marginRight: 12 }}
           />
         )}
         <TextInput
           style={{
             flex: 1,
-            paddingVertical: 12,
+            paddingVertical: 0,
+            // Match web app: text-base
             fontSize: 16,
             color: colors.text,
+            lineHeight: 24,
           }}
           placeholderTextColor={colors.textTertiary}
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
           secureTextEntry={isPassword ? !isPasswordVisible : false}
+          multiline={multiline}
+          numberOfLines={numberOfLines}
+          textAlignVertical={multiline ? 'top' : 'center'}
           {...props}
         />
         {isPassword && (
@@ -103,17 +117,22 @@ export function Input({
             onPress={onRightIconPress}
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           >
-            <Ionicons name={rightIcon} size={20} color={colors.textTertiary} />
+            <Ionicons
+              name={rightIcon}
+              size={20}
+              color={isFocused ? colors.primary : colors.textTertiary}
+            />
           </TouchableOpacity>
         )}
       </View>
       {error && (
         <Text
           style={{
-            fontSize: 12,
-            color: colors.error,
-            marginTop: 4,
+            fontSize: 13,
+            color: colors.destructive,
+            marginTop: 6,
             marginLeft: 4,
+            fontWeight: '500',
           }}
         >
           {error}

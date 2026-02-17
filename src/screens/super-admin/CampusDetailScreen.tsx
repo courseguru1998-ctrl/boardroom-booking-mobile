@@ -326,7 +326,7 @@ export function CampusDetailScreen({ route }: CampusDetailScreenProps) {
               />
               <Button
                 title="Deactivate"
-                variant="danger"
+                variant="destructive"
                 onPress={handleDeactivate}
                 style={{ flex: 1 }}
               />
@@ -353,7 +353,7 @@ export function CampusDetailScreen({ route }: CampusDetailScreenProps) {
 
           <Card style={styles.statCard}>
             <View style={[styles.statIconContainer, { backgroundColor: colors.successLight }]}>
-              <Ionicons name="door-open" size={24} color={colors.statusConfirmed} />
+              <Ionicons name="business" size={24} color={colors.statusConfirmed} />
             </View>
             <Text style={[styles.statValue, { color: colors.text }]}>
               {stats?.totalRooms || campus._count?.rooms || 0}

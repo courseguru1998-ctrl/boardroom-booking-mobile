@@ -8,6 +8,7 @@ import { CalendarScreen } from '../screens/main/CalendarScreen';
 import { WaitlistScreen } from '../screens/main/WaitlistScreen';
 import { RoomsScreen } from '../screens/main/RoomsScreen';
 import { MyBookingsScreen } from '../screens/main/MyBookingsScreen';
+import { AIChatScreen } from '../screens/main/AIChatScreen';
 import { SettingsScreen } from '../screens/settings/SettingsScreen';
 import { AnalyticsScreen } from '../screens/admin/AnalyticsScreen';
 import { UsersScreen } from '../screens/admin/UsersScreen';
@@ -74,6 +75,11 @@ function BookingStackNavigator() {
         name="BookingDetail"
         component={BookingDetailScreen}
         options={{ title: 'Booking Details' }}
+      />
+      <BookingStack.Screen
+        name="EditBooking"
+        component={CreateBookingScreen}
+        options={{ title: 'Edit Booking' }}
       />
     </BookingStack.Navigator>
   );
@@ -155,6 +161,9 @@ export function MainNavigator() {
             case 'Calendar':
               iconName = focused ? 'calendar' : 'calendar-outline';
               break;
+            case 'AIAssistant':
+              iconName = focused ? 'chatbubbles' : 'chatbubbles-outline';
+              break;
             case 'Waitlist':
               iconName = focused ? 'time' : 'time-outline';
               break;
@@ -175,6 +184,7 @@ export function MainNavigator() {
     >
       <Tab.Screen name="Dashboard" component={DashboardScreen} />
       <Tab.Screen name="Calendar" component={CalendarScreen} />
+      <Tab.Screen name="AIAssistant" component={AIChatScreen} options={{ title: 'AI' }} />
       <Tab.Screen name="Waitlist" component={WaitlistScreen} />
       <Tab.Screen
         name="Rooms"

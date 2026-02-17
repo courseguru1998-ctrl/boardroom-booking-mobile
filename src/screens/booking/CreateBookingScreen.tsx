@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -7,17 +7,18 @@ import {
   Platform,
   KeyboardAvoidingView,
   TouchableOpacity,
+  ActivityIndicator,
 } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Ionicons } from '@expo/vector-icons';
-import { format } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 import { useTheme } from '../../hooks/useTheme';
-import { useCreateBooking } from '../../hooks/useBookings';
+import { useCreateBooking, useUpdateBooking, useBooking } from '../../hooks/useBookings';
 import { Button, Input, Card } from '../../components/common';
-import type { RoomScreenProps } from '../../navigation/types';
+import type { RoomScreenProps, BookingScreenProps } from '../../navigation/types';
 
 const bookingSchema = z.object({
   title: z
@@ -29,10 +30,21 @@ const bookingSchema = z.object({
 
 type BookingFormData = z.infer<typeof bookingSchema>;
 
-export function CreateBookingScreen({ route, navigation }: RoomScreenProps<'CreateBooking'>) {
-  const { roomId, roomName } = route.params;
+type CreateBookingScreenProps = RoomScreenProps<'CreateBooking'> | BookingScreenProps<'EditBooking'>;
+
+export function CreateBookingScreen({ route, navigation }: CreateBookingScreenProps) {
+  // Check if we're in edit mode by checking if bookingId exists
+  const isEditMode = 'bookingId' in route.params;
+  const bookingId = isEditMode ? route.params.bookingId : undefined;
+  const { roomId, roomName } = 'roomId' in route.params ? route.params : { roomId: '', roomName: '' };
+
   const { colors } = useTheme();
   const createBooking = useCreateBooking();
+  const updateBooking = useUpdateBooking();
+
+  // Fetch existing booking if in edit mode
+  const { data: bookingData, isLoading: isLoadingBooking } = useBooking(bookingId || '');
+
   const [loading, setLoading] = useState(false);
 
   // Date/time state
@@ -50,9 +62,34 @@ export function CreateBookingScreen({ route, navigation }: RoomScreenProps<'Crea
   const [showStartPicker, setShowStartPicker] = useState(false);
   const [showEndPicker, setShowEndPicker] = useState(false);
 
+  // Initialize form with existing booking data when in edit mode
+  useEffect(() => {
+    if (isEditMode && bookingData?.data) {
+      const booking = bookingData.data;
+      const startDate = parseISO(booking.startTime);
+      const endDate = parseISO(booking.endTime);
+
+      // Update form default values
+      reset({
+        title: booking.title,
+        description: booking.description || '',
+      });
+
+      // Set date and time pickers
+      setSelectedDate(startDate);
+      setStartTime(startDate);
+      setEndTime(endDate);
+    }
+  }, [isEditMode, bookingData]);
+
+  // Get room info for edit mode
+  const currentRoomId = isEditMode && bookingData?.data ? bookingData.data.room.id : roomId;
+  const currentRoomName = isEditMode && bookingData?.data ? bookingData.data.room.name : roomName;
+
   const {
     control,
     handleSubmit,
+    reset,
     formState: { errors },
   } = useForm<BookingFormData>({
     resolver: zodResolver(bookingSchema),
@@ -76,7 +113,7 @@ export function CreateBookingScreen({ route, navigation }: RoomScreenProps<'Crea
       return;
     }
 
-    if (start < new Date()) {
+    if (!isEditMode && start < new Date()) {
       const { Alert } = require('react-native');
       Alert.alert('Invalid Time', 'Cannot book in the past.');
       return;
@@ -84,15 +121,29 @@ export function CreateBookingScreen({ route, navigation }: RoomScreenProps<'Crea
 
     setLoading(true);
     try {
-      await createBooking.mutateAsync({
-        roomId,
-        title: data.title,
-        description: data.description,
-        startTime: start.toISOString(),
-        endTime: end.toISOString(),
-      });
-
-      navigation.goBack();
+      if (isEditMode && bookingId) {
+        // Update existing booking
+        await updateBooking.mutateAsync({
+          id: bookingId,
+          data: {
+            title: data.title,
+            description: data.description,
+            startTime: start.toISOString(),
+            endTime: end.toISOString(),
+          },
+        });
+        navigation.goBack();
+      } else {
+        // Create new booking
+        await createBooking.mutateAsync({
+          roomId: currentRoomId,
+          title: data.title,
+          description: data.description,
+          startTime: start.toISOString(),
+          endTime: end.toISOString(),
+        });
+        navigation.goBack();
+      }
     } catch {
       // Error handled by mutation
     } finally {
@@ -110,17 +161,25 @@ export function CreateBookingScreen({ route, navigation }: RoomScreenProps<'Crea
         keyboardShouldPersistTaps="handled"
       >
         {/* Room Info */}
-        <Card style={styles.roomInfo}>
-          <View style={styles.roomInfoRow}>
-            <View style={[styles.roomIcon, { backgroundColor: colors.primaryLight }]}>
-              <Ionicons name="business" size={20} color={colors.primary} />
+        {isEditMode && isLoadingBooking ? (
+          <Card style={styles.roomInfo}>
+            <ActivityIndicator size="small" color={colors.primary} />
+          </Card>
+        ) : (
+          <Card style={styles.roomInfo}>
+            <View style={styles.roomInfoRow}>
+              <View style={[styles.roomIcon, { backgroundColor: colors.primaryLight }]}>
+                <Ionicons name="business" size={20} color={colors.primary} />
+              </View>
+              <View>
+                <Text style={[styles.roomLabel, { color: colors.textSecondary }]}>
+                  {isEditMode ? 'Editing booking for' : 'Booking for'}
+                </Text>
+                <Text style={[styles.roomName, { color: colors.text }]}>{currentRoomName}</Text>
+              </View>
             </View>
-            <View>
-              <Text style={[styles.roomLabel, { color: colors.textSecondary }]}>Booking for</Text>
-              <Text style={[styles.roomName, { color: colors.text }]}>{roomName}</Text>
-            </View>
-          </View>
-        </Card>
+          </Card>
+        )}
 
         {/* Form */}
         <View style={styles.form}>

@@ -52,7 +52,7 @@ export function WaitlistScreen({ navigation }: WaitlistScreenProps) {
       case 'EXPIRED':
         return 'Expired';
       default:
-        return status.toLowerCase();
+        return String(status).toLowerCase();
     }
   };
 
