@@ -174,7 +174,7 @@ export function MainNavigator() {
               iconName = focused ? 'list' : 'list-outline';
               break;
             case 'Settings':
-              iconName = focused ? 'settings' : 'settings-outline';
+              iconName = focused ? 'person' : 'person-outline';
               break;
           }
 
@@ -199,7 +199,7 @@ export function MainNavigator() {
       <Tab.Screen
         name="Settings"
         component={SettingsStackNavigator}
-        options={{ title: 'Settings' }}
+        options={{ title: 'Profile' }}
       />
     </Tab.Navigator>
   );

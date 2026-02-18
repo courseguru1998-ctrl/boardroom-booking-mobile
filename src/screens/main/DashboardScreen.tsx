@@ -270,17 +270,22 @@ export function DashboardScreen({ navigation }: MainTabScreenProps<'Dashboard'>)
                   {user?.firstName || 'User'} {user?.lastName || ''}
                 </Text>
               </View>
-              <View
-                style={[
-                  styles.avatar,
-                  { backgroundColor: 'rgba(255,255,255,0.15)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)' },
-                ]}
+              <TouchableOpacity
+                onPress={() => navigation.navigate('Settings' as any)}
+                activeOpacity={0.7}
               >
-                <Text style={[styles.avatarText, { color: '#FFF' }]}>
-                  {(user?.firstName?.[0] || 'U').toUpperCase()}
-                  {(user?.lastName?.[0] || '').toUpperCase()}
-                </Text>
-              </View>
+                <View
+                  style={[
+                    styles.avatar,
+                    { backgroundColor: 'rgba(255,255,255,0.15)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)' },
+                  ]}
+                >
+                  <Text style={[styles.avatarText, { color: '#FFF' }]}>
+                    {(user?.firstName?.[0] || 'U').toUpperCase()}
+                    {(user?.lastName?.[0] || '').toUpperCase()}
+                  </Text>
+                </View>
+              </TouchableOpacity>
             </View>
 
             {/* Next Meeting Card */}

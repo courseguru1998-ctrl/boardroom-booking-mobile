@@ -13,9 +13,10 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import * as SecureStore from 'expo-secure-store';
+import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '../../hooks/useTheme';
 import { useAIChat } from '../../hooks/useAIChat';
-import { Card } from '../../components/common';
+import { Card, Header } from '../../components/common';
 
 interface Message {
   id: string;
@@ -25,6 +26,7 @@ interface Message {
 
 export function AIChatScreen() {
   const { colors } = useTheme();
+  const navigation = useNavigation<any>();
   const [inputText, setInputText] = useState('');
   const [apiKeyConfigured, setApiKeyConfigured] = useState<boolean | null>(null);
   const scrollViewRef = useRef<ScrollView>(null);
@@ -148,16 +150,19 @@ export function AIChatScreen() {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-      <View style={styles.header}>
-        <Text style={[styles.headerTitle, { color: colors.text }]}>
-          AI Assistant
-        </Text>
-        {messages.length > 0 && (
-          <TouchableOpacity onPress={clearChat}>
-            <Ionicons name="trash-outline" size={22} color={colors.textSecondary} />
-          </TouchableOpacity>
-        )}
-      </View>
+      <Header
+        title="AI Assistant"
+        showProfile={true}
+        onProfilePress={() => navigation.navigate('Settings')}
+        rightAction={
+          messages.length > 0
+            ? {
+                icon: 'trash-outline',
+                onPress: clearChat,
+              }
+            : undefined
+        }
+      />
 
       {apiKeyConfigured === false ? (
         renderNoApiKey()
@@ -233,17 +238,6 @@ export function AIChatScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-  },
-  headerTitle: {
-    fontSize: 24,
-    fontWeight: '700',
   },
   keyboardView: {
     flex: 1,

@@ -30,10 +30,11 @@ import {
   setHours,
   setMinutes,
 } from 'date-fns';
+import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '../../hooks/useTheme';
 import { useBookings } from '../../hooks/useBookings';
 import { useRooms } from '../../hooks/useRooms';
-import { Card, StatusBadge } from '../../components/common';
+import { Card, StatusBadge, Header, EmptyState } from '../../components/common';
 import { formatBookingTime } from '../../utils/date';
 import type { MainTabScreenProps } from '../../navigation/types';
 import type { Booking } from '../../types';
@@ -55,6 +56,7 @@ const TIME_SLOTS = Array.from({ length: 15 }, (_, i) => i + 7);
 
 export function CalendarScreen({ navigation }: MainTabScreenProps<'Calendar'>) {
   const { colors } = useTheme();
+  const nav = useNavigation<any>();
   const [viewMode, setViewMode] = useState<ViewMode>('month');
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -346,19 +348,17 @@ export function CalendarScreen({ navigation }: MainTabScreenProps<'Calendar'>) {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+      <Header
+        title="Calendar"
+        subtitle={`${todayBookingsCount} bookings today`}
+        showProfile={true}
+        onProfilePress={() => nav.navigate('Settings')}
+      />
+
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         refreshControl={<RefreshControl refreshing={isLoading} onRefresh={refetch} />}
       >
-        {/* Header */}
-        <View style={styles.header}>
-          <Text style={[styles.headerTitle, { color: colors.text }]}>Calendar</Text>
-          <View style={[styles.todayBadge, { backgroundColor: colors.primaryLight }]}>
-            <Text style={[styles.todayBadgeText, { color: colors.primary }]}>
-              {todayBookingsCount} today
-            </Text>
-          </View>
-        </View>
 
         {/* View Toggle */}
         {renderViewToggle()}
@@ -476,15 +476,11 @@ export function CalendarScreen({ navigation }: MainTabScreenProps<'Calendar'>) {
           </Text>
 
           {bookingsForSelectedDate.length === 0 ? (
-            <Card style={styles.emptyCard}>
-              <View style={styles.emptyContent}>
-                <Ionicons name="calendar-outline" size={48} color={colors.textTertiary} />
-                <Text style={[styles.emptyTitle, { color: colors.textSecondary }]}>No bookings</Text>
-                <Text style={[styles.emptySubtitle, { color: colors.textTertiary }]}>
-                  {selectedRoom ? `No bookings for ${selectedRoom.name}` : 'No bookings for this day'}
-                </Text>
-              </View>
-            </Card>
+            <EmptyState
+              icon="calendar-outline"
+              title="No bookings"
+              subtitle={selectedRoom ? `No bookings for ${selectedRoom.name}` : 'No bookings for this day'}
+            />
           ) : (
             <View style={styles.bookingsList}>
               {bookingsForSelectedDate.map((booking, index) => renderBookingCard(booking, index))}
@@ -499,15 +495,6 @@ export function CalendarScreen({ navigation }: MainTabScreenProps<'Calendar'>) {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   scrollContent: { padding: 16 },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  headerTitle: { fontSize: 28, fontWeight: '700' },
-  todayBadge: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 16 },
-  todayBadgeText: { fontSize: 13, fontWeight: '600' },
   viewToggle: {
     flexDirection: 'row',
     borderRadius: 12,
@@ -608,8 +595,4 @@ const styles = StyleSheet.create({
   timeRow: { flexDirection: 'row', padding: 10, marginBottom: 8 },
   timeItem: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   timeText: { fontSize: 13, fontWeight: '500' },
-  emptyCard: { padding: 32 },
-  emptyContent: { alignItems: 'center', gap: 8 },
-  emptyTitle: { fontSize: 16, fontWeight: '600', marginTop: 4 },
-  emptySubtitle: { fontSize: 14, textAlign: 'center' },
 });

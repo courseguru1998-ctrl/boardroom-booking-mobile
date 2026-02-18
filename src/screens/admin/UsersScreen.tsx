@@ -11,9 +11,10 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '../../hooks/useTheme';
 import { useAuth } from '../../hooks/useAuth';
-import { Card, Button, StatusBadge } from '../../components/common';
+import { Card, Button, StatusBadge, Header, EmptyState } from '../../components/common';
 import { adminApi } from '../../services/admin';
 import type { User, ApprovalStatus, UserRole } from '../../types';
 
@@ -25,6 +26,7 @@ type TabType = 'all' | 'pending';
 export function UsersScreen() {
   const { colors } = useTheme();
   const { user } = useAuth();
+  const navigation = useNavigation<any>();
 
   const [activeTab, setActiveTab] = useState<TabType>('all');
   const [allUsers, setAllUsers] = useState<User[]>([]);
@@ -170,15 +172,16 @@ export function UsersScreen() {
   if (!isAdmin) {
     return (
       <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-        <View style={styles.accessDeniedContainer}>
-          <Ionicons name="shield-outline" size={64} color={colors.textTertiary} />
-          <Text style={[styles.accessDeniedTitle, { color: colors.text }]}>
-            Access Denied
-          </Text>
-          <Text style={[styles.accessDeniedSubtitle, { color: colors.textSecondary }]}>
-            You need admin privileges to manage users
-          </Text>
-        </View>
+        <Header
+          title="Users"
+          showProfile={true}
+          onProfilePress={() => navigation.navigate('Settings')}
+        />
+        <EmptyState
+          icon="shield-outline"
+          title="Access Denied"
+          subtitle="You need admin privileges to manage users"
+        />
       </SafeAreaView>
     );
   }
@@ -187,6 +190,11 @@ export function UsersScreen() {
   if (isLoading && !allUsers.length && !pendingUsers.length) {
     return (
       <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+        <Header
+          title="Users"
+          showProfile={true}
+          onProfilePress={() => navigation.navigate('Settings')}
+        />
         <View style={styles.loadingContainer}>
           <Ionicons name="people-outline" size={48} color={colors.primary} />
           <Text style={[styles.loadingText, { color: colors.textSecondary }]}>
@@ -285,119 +293,103 @@ export function UsersScreen() {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-      <ScrollView
-        contentContainerStyle={styles.scrollContent}
-        refreshControl={
-          <RefreshControl refreshing={isRefreshing} onRefresh={handleRefresh} />
-        }
-      >
-        {/* Header */}
-        <View style={styles.header}>
-          <View>
-            <Text style={[styles.pageTitle, { color: colors.text }]}>Users</Text>
-            <Text style={[styles.pageSubtitle, { color: colors.textSecondary }]}>
-              Manage user accounts and approvals
-            </Text>
-          </View>
-          <TouchableOpacity
-            style={[styles.refreshButton, { backgroundColor: colors.primaryLight }]}
-            onPress={handleRefresh}
-          >
-            <Ionicons name="refresh" size={20} color={colors.primary} />
-          </TouchableOpacity>
-        </View>
+      <Header
+        title="Users"
+        subtitle={`${displayUsers.length} users`}
+        showProfile={true}
+        onProfilePress={() => navigation.navigate('Settings')}
+        rightAction={{
+          icon: 'refresh',
+          onPress: handleRefresh,
+        }}
+      />
 
-        {/* Tabs */}
-        <View style={[styles.tabsContainer, { backgroundColor: colors.surfaceSecondary }]}>
-          <TouchableOpacity
+      {/* Tabs */}
+      <View style={[styles.tabsContainer, { backgroundColor: colors.surfaceSecondary, marginHorizontal: 20 }]}>
+        <TouchableOpacity
+          style={[
+            styles.tab,
+            activeTab === 'all' && { backgroundColor: colors.card },
+          ]}
+          onPress={() => setActiveTab('all')}
+        >
+          <Text
             style={[
-              styles.tab,
-              activeTab === 'all' && { backgroundColor: colors.card },
+              styles.tabText,
+              { color: activeTab === 'all' ? colors.primary : colors.textSecondary },
             ]}
-            onPress={() => setActiveTab('all')}
+          >
+            All Users
+          </Text>
+          <View
+            style={[
+              styles.tabBadge,
+              { backgroundColor: activeTab === 'all' ? colors.primary : colors.surfaceSecondary },
+            ]}
           >
             <Text
               style={[
-                styles.tabText,
-                { color: activeTab === 'all' ? colors.primary : colors.textSecondary },
+                styles.tabBadgeText,
+                { color: activeTab === 'all' ? '#FFFFFF' : colors.textSecondary },
               ]}
             >
-              All Users
+              {allUsers.length}
             </Text>
+          </View>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[
+            styles.tab,
+            activeTab === 'pending' && { backgroundColor: colors.card },
+          ]}
+          onPress={() => setActiveTab('pending')}
+        >
+          <Text
+            style={[
+              styles.tabText,
+              { color: activeTab === 'pending' ? colors.primary : colors.textSecondary },
+            ]}
+          >
+            Pending
+          </Text>
+          {pendingUsers.length > 0 && (
             <View
               style={[
                 styles.tabBadge,
-                { backgroundColor: activeTab === 'all' ? colors.primary : colors.surfaceSecondary },
+                { backgroundColor: colors.warning },
               ]}
             >
-              <Text
-                style={[
-                  styles.tabBadgeText,
-                  { color: activeTab === 'all' ? '#FFFFFF' : colors.textSecondary },
-                ]}
-              >
-                {allUsers.length}
+              <Text style={[styles.tabBadgeText, { color: '#FFFFFF' }]}>
+                {pendingUsers.length}
               </Text>
             </View>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[
-              styles.tab,
-              activeTab === 'pending' && { backgroundColor: colors.card },
-            ]}
-            onPress={() => setActiveTab('pending')}
-          >
-            <Text
-              style={[
-                styles.tabText,
-                { color: activeTab === 'pending' ? colors.primary : colors.textSecondary },
-              ]}
-            >
-              Pending
-            </Text>
-            {pendingUsers.length > 0 && (
-              <View
-                style={[
-                  styles.tabBadge,
-                  { backgroundColor: colors.warning },
-                ]}
-              >
-                <Text style={[styles.tabBadgeText, { color: '#FFFFFF' }]}>
-                  {pendingUsers.length}
-                </Text>
-              </View>
-            )}
-          </TouchableOpacity>
-        </View>
-
-        {/* Users List */}
-        <View style={styles.usersSection}>
-          {displayUsers.length === 0 ? (
-            <Card style={styles.emptyCard}>
-              <View style={styles.emptyContent}>
-                <Ionicons
-                  name={activeTab === 'pending' ? 'hourglass-outline' : 'people-outline'}
-                  size={48}
-                  color={colors.textTertiary}
-                />
-                <Text style={[styles.emptyTitle, { color: colors.textSecondary }]}>
-                  {activeTab === 'pending' ? 'No pending users' : 'No users found'}
-                </Text>
-                <Text style={[styles.emptySubtitle, { color: colors.textTertiary }]}>
-                  {activeTab === 'pending'
-                    ? 'All user requests have been processed'
-                    : 'Users will appear here when they register'}
-                </Text>
-              </View>
-            </Card>
-          ) : (
-            <View style={styles.usersList}>
-              {displayUsers.map(renderUserItem)}
-            </View>
           )}
-        </View>
-      </ScrollView>
+        </TouchableOpacity>
+      </View>
+
+      <FlatList
+        data={displayUsers}
+        renderItem={({ item }) => renderUserItem(item)}
+        keyExtractor={(item) => item.id}
+        numColumns={2}
+        columnWrapperStyle={styles.gridRow}
+        contentContainerStyle={styles.listContent}
+        refreshControl={
+          <RefreshControl refreshing={isRefreshing} onRefresh={handleRefresh} />
+        }
+        ListEmptyComponent={
+          !isLoading ? (
+            <EmptyState
+              icon={activeTab === 'pending' ? 'hourglass-outline' : 'people-outline'}
+              title={activeTab === 'pending' ? 'No pending users' : 'No users found'}
+              subtitle={activeTab === 'pending'
+                ? 'All user requests have been processed'
+                : 'Users will appear here when they register'}
+            />
+          ) : null
+        }
+      />
     </SafeAreaView>
   );
 }
@@ -406,35 +398,19 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  scrollContent: {
+  listContent: {
     padding: 20,
+    gap: 12,
   },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 20,
-  },
-  pageTitle: {
-    fontSize: 28,
-    fontWeight: '700',
-  },
-  pageSubtitle: {
-    fontSize: 14,
-    marginTop: 4,
-  },
-  refreshButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    justifyContent: 'center',
-    alignItems: 'center',
+  gridRow: {
+    gap: 12,
+    justifyContent: 'flex-start',
   },
   tabsContainer: {
     flexDirection: 'row',
     borderRadius: 12,
     padding: 4,
-    marginBottom: 20,
+    marginBottom: 16,
   },
   tab: {
     flex: 1,
@@ -458,13 +434,9 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '600',
   },
-  usersSection: {
-    marginBottom: 20,
-  },
-  usersList: {
-    gap: 12,
-  },
   userCard: {
+    flex: 1,
+    maxWidth: '48%',
     marginBottom: 0,
   },
   userHeader: {
@@ -556,21 +528,5 @@ const styles = StyleSheet.create({
   loadingText: {
     fontSize: 16,
     fontWeight: '500',
-  },
-  accessDeniedContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 40,
-    gap: 16,
-  },
-  accessDeniedTitle: {
-    fontSize: 22,
-    fontWeight: '700',
-    marginTop: 8,
-  },
-  accessDeniedSubtitle: {
-    fontSize: 14,
-    textAlign: 'center',
   },
 });

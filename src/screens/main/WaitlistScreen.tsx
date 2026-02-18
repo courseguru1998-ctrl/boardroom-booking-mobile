@@ -8,10 +8,12 @@ import {
   TouchableOpacity,
   Alert,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '../../hooks/useTheme';
 import { useMyWaitlist, useRemoveFromWaitlist } from '../../hooks/useWaitlist';
-import { Card, StatusBadge } from '../../components/common';
+import { Card, StatusBadge, Header, EmptyState } from '../../components/common';
 import { formatBookingDate, formatBookingTime } from '../../utils/date';
 import type { WaitlistEntry } from '../../services/waitlist';
 
@@ -21,6 +23,7 @@ interface WaitlistScreenProps {
 
 export function WaitlistScreen({ navigation }: WaitlistScreenProps) {
   const { colors } = useTheme();
+  const nav = useNavigation<any>();
   const { data, isLoading, refetch } = useMyWaitlist();
   const removeFromWaitlist = useRemoveFromWaitlist();
 
@@ -77,18 +80,6 @@ export function WaitlistScreen({ navigation }: WaitlistScreenProps) {
     return (
       <Card style={styles.entryCard}>
         <View style={styles.entryHeader}>
-          <View style={{ flex: 1 }}>
-            <Text style={[styles.entryTitle, { color: colors.text }]} numberOfLines={1}>
-              {entry.room.name}
-            </Text>
-            <View style={styles.entryMeta}>
-              <Ionicons name="location-outline" size={14} color={colors.textSecondary} />
-              <Text style={[styles.entryRoom, { color: colors.textSecondary }]}>
-                {entry.room.building ? `${entry.room.building}` : ''}
-                {entry.room.floor ? ` - ${entry.room.floor}` : ''}
-              </Text>
-            </View>
-          </View>
           <View
             style={[
               styles.statusBadge,
@@ -101,17 +92,23 @@ export function WaitlistScreen({ navigation }: WaitlistScreenProps) {
           </View>
         </View>
 
+        <Text style={[styles.entryTitle, { color: colors.text }]} numberOfLines={1}>
+          {entry.room.name}
+        </Text>
+
+        <View style={styles.entryMeta}>
+          <Ionicons name="location-outline" size={12} color={colors.textSecondary} />
+          <Text style={[styles.entryRoom, { color: colors.textSecondary }]} numberOfLines={1}>
+            {entry.room.building ? `${entry.room.building}` : ''}
+            {entry.room.floor ? ` - ${entry.room.floor}` : ''}
+          </Text>
+        </View>
+
         <View style={[styles.timeRow, { backgroundColor: colors.surfaceSecondary }]}>
           <View style={styles.timeItem}>
-            <Ionicons name="calendar-outline" size={16} color={colors.primary} />
+            <Ionicons name="calendar-outline" size={12} color={colors.primary} />
             <Text style={[styles.timeText, { color: colors.text }]}>
               {formatBookingDate(entry.startTime)}
-            </Text>
-          </View>
-          <View style={styles.timeItem}>
-            <Ionicons name="time-outline" size={16} color={colors.primary} />
-            <Text style={[styles.timeText, { color: colors.text }]}>
-              {formatBookingTime(entry.startTime, entry.endTime)}
             </Text>
           </View>
         </View>
@@ -121,18 +118,18 @@ export function WaitlistScreen({ navigation }: WaitlistScreenProps) {
             onPress={() => handleRemove(entry)}
             style={[styles.removeButton, { borderColor: colors.error }]}
           >
-            <Ionicons name="exit-outline" size={16} color={colors.error} />
+            <Ionicons name="exit-outline" size={12} color={colors.error} />
             <Text style={[styles.removeText, { color: colors.error }]}>
-              Leave Waitlist
+              Leave
             </Text>
           </TouchableOpacity>
         )}
 
         {entry.status === 'NOTIFIED' && (
           <View style={[styles.notifiedBanner, { backgroundColor: colors.primaryLight }]}>
-            <Ionicons name="notifications-outline" size={16} color={colors.primary} />
-            <Text style={[styles.notifiedText, { color: colors.primary }]}>
-              A spot has opened up! Book now to secure your slot.
+            <Ionicons name="notifications-outline" size={12} color={colors.primary} />
+            <Text style={[styles.notifiedText, { color: colors.primary }]} numberOfLines={2}>
+              Book now!
             </Text>
           </View>
         )}
@@ -141,83 +138,83 @@ export function WaitlistScreen({ navigation }: WaitlistScreenProps) {
   };
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+      <Header
+        title="Waitlist"
+        subtitle={`${waitlistEntries.length} entries`}
+        showProfile={true}
+        onProfilePress={() => nav.navigate('Settings')}
+      />
+
       <FlatList
         data={waitlistEntries}
         renderItem={renderWaitlistEntry}
         keyExtractor={(item) => item.id}
+        numColumns={2}
+        columnWrapperStyle={styles.gridRow}
         contentContainerStyle={styles.listContent}
         refreshControl={
           <RefreshControl refreshing={isLoading} onRefresh={refetch} />
         }
         ListEmptyComponent={
           !isLoading ? (
-            <View style={styles.emptyContainer}>
-              <Ionicons name="time-outline" size={48} color={colors.textTertiary} />
-              <Text style={[styles.emptyTitle, { color: colors.text }]}>
-                No Waitlist Entries
-              </Text>
-              <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
-                When you join a waitlist for a booked time slot, it will appear here.
-              </Text>
-            </View>
+            <EmptyState
+              icon="time-outline"
+              title="No Waitlist Entries"
+              subtitle="When you join a waitlist for a booked time slot, it will appear here."
+            />
           ) : null
         }
       />
-    </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  listContent: { padding: 16, gap: 12 },
-  entryCard: { marginBottom: 0 },
+  listContent: { padding: 12, gap: 12 },
+  gridRow: { gap: 12, justifyContent: 'flex-start' },
+  entryCard: { flex: 1, maxWidth: '48%', marginBottom: 0 },
   entryHeader: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 12,
+    justifyContent: 'flex-end',
+    marginBottom: 8,
   },
-  entryTitle: { fontSize: 16, fontWeight: '600', marginBottom: 4 },
-  entryMeta: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  entryRoom: { fontSize: 13 },
+  entryTitle: { fontSize: 14, fontWeight: '600', marginBottom: 4 },
+  entryMeta: { flexDirection: 'row', alignItems: 'center', gap: 4, marginBottom: 8 },
+  entryRoom: { fontSize: 12, flex: 1 },
   statusBadge: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 20,
-    alignSelf: 'flex-start',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 12,
   },
-  statusText: { fontSize: 12, fontWeight: '600' },
+  statusText: { fontSize: 10, fontWeight: '600' },
   timeRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    borderRadius: 8,
-    padding: 10,
-    marginBottom: 8,
+    borderRadius: 6,
+    padding: 8,
+    marginBottom: 6,
   },
-  timeItem: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  timeText: { fontSize: 13, fontWeight: '500' },
+  timeItem: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  timeText: { fontSize: 11, fontWeight: '500' },
   removeButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 6,
+    gap: 4,
     borderWidth: 1,
-    borderRadius: 8,
-    paddingVertical: 8,
-    marginTop: 4,
+    borderRadius: 6,
+    paddingVertical: 6,
   },
-  removeText: { fontSize: 13, fontWeight: '600' },
+  removeText: { fontSize: 11, fontWeight: '600' },
   notifiedBanner: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    borderRadius: 8,
-    padding: 10,
-    marginTop: 4,
+    justifyContent: 'center',
+    gap: 4,
+    borderRadius: 6,
+    padding: 6,
   },
-  notifiedText: { fontSize: 13, fontWeight: '500', flex: 1 },
-  emptyContainer: { alignItems: 'center', paddingTop: 80, paddingHorizontal: 32, gap: 12 },
-  emptyTitle: { fontSize: 18, fontWeight: '600' },
-  emptyText: { fontSize: 15, textAlign: 'center', lineHeight: 22 },
+  notifiedText: { fontSize: 10, fontWeight: '600', flex: 1, textAlign: 'center' },
 });
