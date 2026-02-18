@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import {
   View,
   Text,
@@ -27,6 +28,7 @@ export function UsersScreen() {
   const { colors } = useTheme();
   const { user } = useAuth();
   const navigation = useNavigation<any>();
+  const queryClient = useQueryClient();
 
   const [activeTab, setActiveTab] = useState<TabType>('all');
   const [allUsers, setAllUsers] = useState<User[]>([]);
@@ -46,18 +48,25 @@ export function UsersScreen() {
         setIsLoading(true);
       }
 
-      // Fetch both all users and pending users in parallel
-      const [allUsersResponse, pendingUsersResponse] = await Promise.all([
-        adminApi.getAllUsers(),
-        adminApi.getPendingUsers(),
-      ]);
-
-      if (allUsersResponse.success && allUsersResponse.data) {
-        setAllUsers(allUsersResponse.data);
+      // Fetch users individually to handle errors independently
+      try {
+        const allUsersResponse = await adminApi.getAllUsers();
+        if (allUsersResponse.success && allUsersResponse.data) {
+          setAllUsers(allUsersResponse.data);
+        }
+      } catch (error: any) {
+        console.error('Failed to fetch all users:', error);
+        // Don't block pending users loading if this fails
       }
 
-      if (pendingUsersResponse.success && pendingUsersResponse.data) {
-        setPendingUsers(pendingUsersResponse.data);
+      try {
+        const pendingUsersResponse = await adminApi.getPendingUsers();
+        if (pendingUsersResponse.success && pendingUsersResponse.data) {
+          setPendingUsers(pendingUsersResponse.data);
+        }
+      } catch (error: any) {
+        console.error('Failed to fetch pending users:', error);
+        // Don't block all users loading if this fails
       }
     } catch (error: any) {
       const message = error.response?.data?.message || 'Unable to load users';
@@ -94,12 +103,10 @@ export function UsersScreen() {
               const response = await adminApi.approveUser(userId);
               if (response.success) {
                 Alert.alert('Success', 'User has been approved');
-                // Remove from pending and add to all users
-                const approvedUser = pendingUsers.find(u => u.id === userId);
-                setPendingUsers(prev => prev.filter(u => u.id !== userId));
-                if (approvedUser) {
-                  setAllUsers(prev => [approvedUser, ...prev]);
-                }
+                // Invalidate queries to refresh data
+                queryClient.invalidateQueries({ queryKey: ['admin', 'users'] });
+                // Also refetch to update the list
+                fetchUsers();
               } else {
                 Alert.alert('Error', response.message || 'Failed to approve user');
               }
@@ -130,8 +137,10 @@ export function UsersScreen() {
               const response = await adminApi.rejectUser(userId);
               if (response.success) {
                 Alert.alert('Success', 'User has been rejected');
-                // Remove from pending
-                setPendingUsers(prev => prev.filter(u => u.id !== userId));
+                // Invalidate queries to refresh data
+                queryClient.invalidateQueries({ queryKey: ['admin', 'users'] });
+                // Also refetch to update the list
+                fetchUsers();
               } else {
                 Alert.alert('Error', response.message || 'Failed to reject user');
               }

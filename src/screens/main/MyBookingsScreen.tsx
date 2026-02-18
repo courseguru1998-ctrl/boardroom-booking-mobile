@@ -14,7 +14,7 @@ import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '../../hooks/useTheme';
 import { useMyBookings, useCancelBooking } from '../../hooks/useBookings';
 import { Card, StatusBadge, Header, EmptyState } from '../../components/common';
-import { formatBookingDate, formatBookingTime } from '../../utils/date';
+import { formatBookingDate, formatBookingTime, getUtcDateRange } from '../../utils/date';
 import type { BookingScreenProps } from '../../navigation/types';
 import type { Booking } from '../../types';
 
@@ -27,12 +27,14 @@ export function MyBookingsScreen({ navigation }: BookingScreenProps<'BookingList
   const cancelBooking = useCancelBooking();
 
   const isUpcoming = activeTab === 'upcoming';
-  const now = new Date().toISOString();
+  const now = new Date();
 
+  // Use UTC date range for timezone handling
+  // Don't filter by status to show both CONFIRMED and PENDING bookings
   const { data, isLoading, refetch } = useMyBookings(
     isUpcoming
-      ? { startDate: now, status: 'CONFIRMED' }
-      : { endDate: now }
+      ? getUtcDateRange(30) // Get next 30 days
+      : { endDate: now.toISOString() } // Past bookings
   );
 
   const bookings = data?.data || [];

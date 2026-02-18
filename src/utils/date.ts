@@ -1,4 +1,40 @@
-import { format, formatDistanceToNow, isToday, isTomorrow, parseISO } from 'date-fns';
+import { format, formatDistanceToNow, isToday, isTomorrow, parseISO, addDays, startOfDay, endOfDay } from 'date-fns';
+
+/**
+ * Get the start of today in UTC format for API calls
+ * This ensures consistent date filtering regardless of timezone
+ */
+export function getUtcStartOfDay(date: Date = new Date()): string {
+  const d = startOfDay(date);
+  return d.toISOString();
+}
+
+/**
+ * Get the end of today in UTC format for API calls
+ */
+export function getUtcEndOfDay(date: Date = new Date()): string {
+  const d = endOfDay(date);
+  return d.toISOString();
+}
+
+/**
+ * Get date range for next N days in UTC format
+ */
+export function getUtcDateRange(daysAhead: number = 30): { startDate: string; endDate: string } {
+  const today = new Date();
+  return {
+    startDate: getUtcStartOfDay(today),
+    endDate: getUtcEndOfDay(addDays(today, daysAhead)),
+  };
+}
+
+/**
+ * Format date for API query params (YYYY-MM-DD format)
+ * Uses local date to ensure user sees their local timezone
+ */
+export function formatDateForQuery(date: Date = new Date()): string {
+  return format(date, 'yyyy-MM-dd');
+}
 
 export function formatBookingTime(startTime: string, endTime: string): string {
   const start = parseISO(startTime);

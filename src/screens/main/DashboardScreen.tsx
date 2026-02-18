@@ -21,6 +21,7 @@ import { formatBookingDate, formatBookingTime, formatFullDate } from '../../util
 import type { MainTabScreenProps } from '../../navigation/types';
 import type { Booking } from '../../types';
 import { format, isToday, isTomorrow, differenceInMinutes, startOfDay, endOfDay, addDays } from 'date-fns';
+import { getUtcDateRange } from '../../utils/date';
 
 // Time-based greeting like web app
 function getGreeting() {
@@ -43,20 +44,22 @@ export function DashboardScreen({ navigation }: MainTabScreenProps<'Dashboard'>)
   const toast = useToast();
   const notifiedBookingsRef = useRef<Set<string>>(new Set());
 
-  // Fetch upcoming bookings
+  // Fetch upcoming bookings - use UTC date range to handle timezone correctly
+  // Don't filter by status to show both CONFIRMED and PENDING bookings
+  const dateRange = getUtcDateRange(30);
   const { data: upcomingBookings, isLoading: loadingUpcoming, refetch: refetchUpcoming } = useMyBookings({
-    status: 'CONFIRMED',
-    startDate: format(new Date(), 'yyyy-MM-dd'),
-    limit: 10,
+    startDate: dateRange.startDate,
+    endDate: dateRange.endDate,
+    // Removed status filter to show all active bookings (CONFIRMED and PENDING)
   });
 
   // Fetch all rooms
   const { data: roomsData } = useRooms({ limit: 100 });
 
-  // Fetch today's bookings for stats
+  // Fetch today's bookings for stats - use UTC for timezone handling
   const { data: todayBookings } = useBookings({
-    startDate: format(startOfDay(new Date()), 'yyyy-MM-dd'),
-    endDate: format(endOfDay(new Date()), 'yyyy-MM-dd'),
+    startDate: startOfDay(new Date()).toISOString(),
+    endDate: endOfDay(new Date()).toISOString(),
     status: 'CONFIRMED',
     limit: 100,
   });
@@ -66,12 +69,12 @@ export function DashboardScreen({ navigation }: MainTabScreenProps<'Dashboard'>)
   const roomCount = roomsData?.data?.length || 0;
   const todayCount = todayBookings?.data?.length || 0;
 
-  // Calculate this week's bookings
+  // Calculate this week's bookings - use UTC for timezone handling
   const weekStart = startOfDay(new Date());
   const weekEnd = endOfDay(addDays(new Date(), 7));
   const { data: weekBookings } = useBookings({
-    startDate: format(weekStart, 'yyyy-MM-dd'),
-    endDate: format(weekEnd, 'yyyy-MM-dd'),
+    startDate: weekStart.toISOString(),
+    endDate: weekEnd.toISOString(),
     status: 'CONFIRMED',
     limit: 100,
   });
