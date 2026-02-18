@@ -2,7 +2,7 @@
   "expo": {
     "name": "JGI Boardroom Booking",
     "slug": "boardroom-booking-mobile",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
@@ -23,7 +23,10 @@
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "com.boardroombooking.mobile"
+      "package": "com.boardroombooking.mobile",
+      "permissions": [
+        "android.permission.VIBRATE"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
