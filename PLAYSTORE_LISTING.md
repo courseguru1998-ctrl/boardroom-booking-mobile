@@ -70,14 +70,43 @@ Download now and transform how your team books meeting rooms!
 ---
 
 ## Feature Graphic
-- Size: 1024x500 PNG
-- Background: #001c54 (brand color)
-- Text: "JGI Boardroom Booking"
+### Specifications
+- **Size**: 1024x500 PNG
+- **Format**: 24-bit PNG or JPEG
+- **File Size**: Max 1MB
+
+### Design Template
+```
+┌─────────────────────────────────────────────────────────────┐
+│                                                             │
+│                    [App Icon - 120x120]                     │
+│                                                             │
+│                                                             │
+│              JGI Boardroom Booking                          │
+│                                                             │
+│         Book meeting rooms with AI assistance                │
+│                                                             │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Color Palette
+- Background: #001c54 (Navy Blue)
+- Text: #FFFFFF (White)
+- Accent: #4A90D9 (Light Blue)
+
+### Recommended Elements
+1. App icon centered or left-aligned
+2. App name: "JGI Boardroom Booking" (bold, white)
+3. Tagline: "Book meeting rooms with AI assistance" (smaller, white)
+4. Clean, minimal design
 
 ---
 
 ## Privacy Policy
-Required - URL must be provided
+- **File**: `privacy-policy.html` (can be hosted on Vercel/GitHub Pages)
+- **URL Format**: `https://boardroom-booking-mobile.vercel.app/privacy-policy.html`
+- **Action Needed**: Deploy the HTML file and provide the URL to Google Play Console
 
 ---
 
