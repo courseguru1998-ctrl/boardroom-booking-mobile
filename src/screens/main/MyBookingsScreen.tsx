@@ -7,13 +7,14 @@ import {
   StyleSheet,
   TouchableOpacity,
   Alert,
+  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '../../hooks/useTheme';
 import { useMyBookings, useCancelBooking } from '../../hooks/useBookings';
-import { Card, StatusBadge, Header, EmptyState } from '../../components/common';
+import { Card, StatusBadge, Header, EmptyState, ErrorState } from '../../components/common';
 import { formatBookingDate, formatBookingTime, getUtcDateRange } from '../../utils/date';
 import type { BookingScreenProps } from '../../navigation/types';
 import type { Booking } from '../../types';
@@ -31,7 +32,7 @@ export function MyBookingsScreen({ navigation }: BookingScreenProps<'BookingList
 
   // Use UTC date range for timezone handling
   // Don't filter by status to show both CONFIRMED and PENDING bookings
-  const { data, isLoading, refetch } = useMyBookings(
+  const { data, isLoading, isError, error, refetch } = useMyBookings(
     isUpcoming
       ? getUtcDateRange(30) // Get next 30 days
       : { endDate: now.toISOString() } // Past bookings
@@ -143,18 +144,41 @@ export function MyBookingsScreen({ navigation }: BookingScreenProps<'BookingList
         keyExtractor={(item) => item.id}
         numColumns={2}
         columnWrapperStyle={styles.gridRow}
-        contentContainerStyle={styles.listContent}
+        contentContainerStyle={[
+          styles.listContent,
+          (isError || (bookings.length === 0 && !isLoading)) && styles.listContentCentered
+        ]}
         refreshControl={
-          <RefreshControl refreshing={isLoading} onRefresh={refetch} />
+          <RefreshControl
+            refreshing={isLoading}
+            onRefresh={refetch}
+            colors={[colors.primary]}
+            tintColor={colors.primary}
+          />
         }
         ListEmptyComponent={
-          !isLoading ? (
+          isLoading ? (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="large" color={colors.primary} />
+              <Text style={[styles.loadingText, { color: colors.textSecondary }]}>
+                Loading bookings...
+              </Text>
+            </View>
+          ) : isError ? (
+            <ErrorState
+              title="Failed to load bookings"
+              message={error?.message || 'Unable to fetch your bookings. Please try again.'}
+              onRetry={refetch}
+            />
+          ) : (
             <EmptyState
               icon="calendar-outline"
               title={`No ${activeTab} bookings`}
               subtitle={activeTab === 'upcoming' ? 'Book a room to see your upcoming bookings' : 'Your past bookings will appear here'}
+              actionLabel="Browse Rooms"
+              onAction={() => nav.navigate('Rooms')}
             />
-          ) : null
+          )
         }
       />
     </SafeAreaView>
@@ -167,6 +191,9 @@ const styles = StyleSheet.create({
   tab: { flex: 1, paddingVertical: 14, alignItems: 'center' },
   tabText: { fontSize: 15, fontWeight: '600' },
   listContent: { padding: 12, gap: 12 },
+  listContentCentered: { flexGrow: 1, justifyContent: 'center' },
+  loadingContainer: { alignItems: 'center', padding: 40, gap: 12 },
+  loadingText: { fontSize: 14, marginTop: 8 },
   gridRow: { gap: 12, justifyContent: 'flex-start' },
   bookingCard: { flex: 1, maxWidth: '48%', marginBottom: 0 },
   bookingHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },

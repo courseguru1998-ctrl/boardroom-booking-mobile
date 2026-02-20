@@ -6,3 +6,4 @@ export { StatusBadge } from './StatusBadge';
 export { ErrorBoundary } from './ErrorBoundary';
 export { Header } from './Header';
 export { EmptyState } from './EmptyState';
+export { ErrorState } from './ErrorState';

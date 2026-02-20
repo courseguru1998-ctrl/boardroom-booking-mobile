@@ -7,6 +7,7 @@ import {
   StyleSheet,
   TouchableOpacity,
   Animated,
+  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -16,7 +17,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { useMyBookings, useBookings } from '../../hooks/useBookings';
 import { useRooms } from '../../hooks/useRooms';
 import { useToast } from '../../hooks/useToast';
-import { Card, StatusBadge, Button } from '../../components/common';
+import { Card, StatusBadge, Button, EmptyState, ErrorState } from '../../components/common';
 import { formatBookingDate, formatBookingTime, formatFullDate } from '../../utils/date';
 import type { MainTabScreenProps } from '../../navigation/types';
 import type { Booking } from '../../types';
@@ -47,19 +48,29 @@ export function DashboardScreen({ navigation }: MainTabScreenProps<'Dashboard'>)
   // Fetch upcoming bookings - use UTC date range to handle timezone correctly
   // Don't filter by status to show both CONFIRMED and PENDING bookings
   const dateRange = getUtcDateRange(30);
-  const { data: upcomingBookings, isLoading: loadingUpcoming, refetch: refetchUpcoming } = useMyBookings({
+  const { data: upcomingBookings, isLoading: loadingUpcoming, isError: errorUpcoming, error: upcomingError, refetch: refetchUpcoming } = useMyBookings({
     startDate: dateRange.startDate,
     endDate: dateRange.endDate,
     // Removed status filter to show all active bookings (CONFIRMED and PENDING)
   });
 
   // Fetch all rooms
-  const { data: roomsData } = useRooms({ limit: 100 });
+  const { data: roomsData, isLoading: loadingRooms, isError: errorRooms, refetch: refetchRooms } = useRooms({ limit: 100 });
 
   // Fetch today's bookings for stats - use UTC for timezone handling
-  const { data: todayBookings } = useBookings({
+  const { data: todayBookings, isLoading: loadingToday, isError: errorToday, refetch: refetchToday } = useBookings({
     startDate: startOfDay(new Date()).toISOString(),
     endDate: endOfDay(new Date()).toISOString(),
+    status: 'CONFIRMED',
+    limit: 100,
+  });
+
+  // Calculate this week's bookings - use UTC for timezone handling
+  const weekStart = startOfDay(new Date());
+  const weekEnd = endOfDay(addDays(new Date(), 7));
+  const { data: weekBookings, isLoading: loadingWeek, isError: errorWeek, refetch: refetchWeek } = useBookings({
+    startDate: weekStart.toISOString(),
+    endDate: weekEnd.toISOString(),
     status: 'CONFIRMED',
     limit: 100,
   });
@@ -68,17 +79,19 @@ export function DashboardScreen({ navigation }: MainTabScreenProps<'Dashboard'>)
   const upcomingCount = upcomingBookings?.data?.length || 0;
   const roomCount = roomsData?.data?.length || 0;
   const todayCount = todayBookings?.data?.length || 0;
-
-  // Calculate this week's bookings - use UTC for timezone handling
-  const weekStart = startOfDay(new Date());
-  const weekEnd = endOfDay(addDays(new Date(), 7));
-  const { data: weekBookings } = useBookings({
-    startDate: weekStart.toISOString(),
-    endDate: weekEnd.toISOString(),
-    status: 'CONFIRMED',
-    limit: 100,
-  });
   const weekCount = weekBookings?.data?.length || 0;
+
+  // Check for any loading or error states
+  const isLoading = loadingUpcoming || loadingRooms || loadingToday || loadingWeek;
+  const hasError = errorUpcoming || errorRooms || errorToday || errorWeek;
+
+  // Refetch all data
+  const handleRefresh = () => {
+    refetchUpcoming();
+    refetchRooms();
+    refetchToday();
+    refetchWeek();
+  };
 
   // Get next upcoming booking
   const nextBooking = upcomingBookings?.data?.[0];
@@ -220,14 +233,41 @@ export function DashboardScreen({ navigation }: MainTabScreenProps<'Dashboard'>)
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+      {hasError && !isLoading && (
+        <View style={[styles.errorBanner, { backgroundColor: colors.error + '15', borderBottomColor: colors.error }]}>
+          <Ionicons name="alert-circle" size={20} color={colors.error} />
+          <Text style={[styles.errorBannerText, { color: colors.error }]}>
+            Failed to load some data
+          </Text>
+          <TouchableOpacity onPress={handleRefresh}>
+            <Text style={[styles.errorBannerRetry, { color: colors.primary }]}>Retry</Text>
+          </TouchableOpacity>
+        </View>
+      )}
       <ScrollView
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={[styles.scrollContent, isLoading && styles.scrollContentLoading]}
         refreshControl={
-          <RefreshControl refreshing={loadingUpcoming} onRefresh={refetchUpcoming} />
+          <RefreshControl
+            refreshing={isLoading}
+            onRefresh={handleRefresh}
+            colors={[colors.primary]}
+            tintColor={colors.primary}
+          />
         }
         showsVerticalScrollIndicator={false}
       >
-        {/* Imminent Meeting Banner - Like web app */}
+        {isLoading && !upcomingBookings?.data ? (
+          <View style={styles.loadingOverlay}>
+            <View style={[styles.loadingCard, { backgroundColor: colors.surface }]}>
+              <ActivityIndicator size="large" color={colors.primary} />
+              <Text style={[styles.loadingText, { color: colors.textSecondary }]}>
+                Loading your dashboard...
+              </Text>
+            </View>
+          </View>
+        ) : (
+          <>
+          {/* Imminent Meeting Banner - Like web app */}
         {imminentBooking && (
           <TouchableOpacity
             style={[styles.imminentBanner, { backgroundColor: '#F97316' }]}
@@ -414,6 +454,8 @@ export function DashboardScreen({ navigation }: MainTabScreenProps<'Dashboard'>)
             })
           )}
         </View>
+          </>
+        )}
       </ScrollView>
     </SafeAreaView>
   );
@@ -726,5 +768,43 @@ const styles = StyleSheet.create({
   emptySubtitle: {
     fontSize: 14,
     textAlign: 'center',
+  },
+  // Loading & Error States
+  errorBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderBottomWidth: 1,
+  },
+  errorBannerText: {
+    fontSize: 13,
+    fontWeight: '500',
+  },
+  errorBannerRetry: {
+    fontSize: 13,
+    fontWeight: '700',
+    marginLeft: 4,
+  },
+  scrollContentLoading: {
+    minHeight: 300,
+  },
+  loadingOverlay: {
+    padding: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 300,
+  },
+  loadingCard: {
+    padding: 32,
+    borderRadius: 16,
+    alignItems: 'center',
+    gap: 12,
+  },
+  loadingText: {
+    fontSize: 14,
+    marginTop: 8,
   },
 });

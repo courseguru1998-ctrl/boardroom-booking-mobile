@@ -7,6 +7,7 @@ import {
   StyleSheet,
   TouchableOpacity,
   TextInput,
+  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -14,7 +15,7 @@ import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '../../hooks/useTheme';
 import { useRooms } from '../../hooks/useRooms';
 import { useFavoriteIds, useToggleFavorite } from '../../hooks/useFavorites';
-import { Card, Header, EmptyState } from '../../components/common';
+import { Card, Header, EmptyState, ErrorState } from '../../components/common';
 import { RoomFilterModal, type RoomFilterValues } from '../../components/room/RoomFilterModal';
 import type { RoomScreenProps } from '../../navigation/types';
 import type { Room } from '../../types';
@@ -49,7 +50,7 @@ export function RoomsScreen({ navigation }: RoomScreenProps<'RoomList'>) {
     ...(filters.amenities?.length ? { amenities: filters.amenities.join(',') } : {}),
   };
 
-  const { data, isLoading, refetch } = useRooms(apiFilters);
+  const { data, isLoading, isError, error, refetch } = useRooms(apiFilters);
   const { data: favoriteIdsData } = useFavoriteIds();
   const toggleFavorite = useToggleFavorite();
 
@@ -205,18 +206,41 @@ export function RoomsScreen({ navigation }: RoomScreenProps<'RoomList'>) {
         keyExtractor={(item) => item.id}
         numColumns={2}
         columnWrapperStyle={styles.gridRow}
-        contentContainerStyle={styles.listContent}
+        contentContainerStyle={[
+          styles.listContent,
+          (isError || (rooms.length === 0 && !isLoading)) && styles.listContentCentered
+        ]}
         refreshControl={
-          <RefreshControl refreshing={isLoading} onRefresh={refetch} />
+          <RefreshControl
+            refreshing={isLoading}
+            onRefresh={refetch}
+            colors={[colors.primary]}
+            tintColor={colors.primary}
+          />
         }
         ListEmptyComponent={
-          !isLoading ? (
+          isLoading ? (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="large" color={colors.primary} />
+              <Text style={[styles.loadingText, { color: colors.textSecondary }]}>
+                Loading rooms...
+              </Text>
+            </View>
+          ) : isError ? (
+            <ErrorState
+              title="Failed to load rooms"
+              message={error?.message || 'Unable to fetch rooms. Please try again.'}
+              onRetry={refetch}
+            />
+          ) : (
             <EmptyState
               icon="business-outline"
               title={searchQuery ? 'No rooms match your search' : 'No rooms available'}
               subtitle={searchQuery ? 'Try adjusting your search or filters' : 'Check back later for available rooms'}
+              actionLabel={searchQuery ? 'Clear Search' : undefined}
+              onAction={searchQuery ? () => setSearchQuery('') : undefined}
             />
-          ) : null
+          )
         }
       />
 
@@ -239,6 +263,9 @@ const styles = StyleSheet.create({
   filterBadge: { position: 'absolute', top: -4, right: -4, width: 18, height: 18, borderRadius: 9, justifyContent: 'center', alignItems: 'center' },
   filterBadgeText: { color: '#FFF', fontSize: 10, fontWeight: '700' },
   listContent: { padding: 12, gap: 12 },
+  listContentCentered: { flexGrow: 1, justifyContent: 'center' },
+  loadingContainer: { alignItems: 'center', padding: 40, gap: 12 },
+  loadingText: { fontSize: 14, marginTop: 8 },
   gridRow: { gap: 12, justifyContent: 'flex-start' },
   roomCard: { flex: 1, maxWidth: '48%', marginBottom: 0 },
   roomHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
