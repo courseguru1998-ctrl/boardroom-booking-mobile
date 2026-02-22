@@ -7,7 +7,6 @@ import {
   StyleSheet,
   TouchableOpacity,
   TextInput,
-  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -205,10 +204,10 @@ export function RoomsScreen({ navigation }: RoomScreenProps<'RoomList'>) {
         renderItem={renderRoom}
         keyExtractor={(item) => item.id}
         numColumns={2}
-        columnWrapperStyle={styles.gridRow}
+        columnWrapperStyle={rooms.length > 0 ? styles.gridRow : undefined}
         contentContainerStyle={[
           styles.listContent,
-          (isError || (rooms.length === 0 && !isLoading)) && styles.listContentCentered
+          rooms.length === 0 && styles.listContentCentered
         ]}
         refreshControl={
           <RefreshControl
@@ -219,14 +218,7 @@ export function RoomsScreen({ navigation }: RoomScreenProps<'RoomList'>) {
           />
         }
         ListEmptyComponent={
-          isLoading ? (
-            <View style={styles.loadingContainer}>
-              <ActivityIndicator size="large" color={colors.primary} />
-              <Text style={[styles.loadingText, { color: colors.textSecondary }]}>
-                Loading rooms...
-              </Text>
-            </View>
-          ) : isError ? (
+          isError ? (
             <ErrorState
               title="Failed to load rooms"
               message={error?.message || 'Unable to fetch rooms. Please try again.'}

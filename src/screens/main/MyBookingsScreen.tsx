@@ -7,7 +7,6 @@ import {
   StyleSheet,
   TouchableOpacity,
   Alert,
-  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -69,7 +68,7 @@ export function MyBookingsScreen({ navigation }: BookingScreenProps<'BookingList
         <StatusBadge status={booking.status} size="sm" />
       </View>
 
-      <Text style={[styles.bookingTitle, { color: colors.text }]} numberOfLines={1}>
+      <Text style={[styles.bookingTitle, { color: colors.text }]} numberOfLines={2}>
         {booking.title}
       </Text>
 
@@ -87,10 +86,10 @@ export function MyBookingsScreen({ navigation }: BookingScreenProps<'BookingList
             {formatBookingDate(booking.startTime)}
           </Text>
         </View>
-        <Text style={[styles.timeText, { color: colors.text }]}>
-          {formatBookingTime(booking.startTime, booking.endTime)}
-        </Text>
       </View>
+      <Text style={[styles.timeText, { color: colors.text, marginTop: 4 }]}>
+        {formatBookingTime(booking.startTime, booking.endTime)}
+      </Text>
 
       {isUpcoming && booking.status === 'CONFIRMED' && (
         <TouchableOpacity
@@ -142,11 +141,9 @@ export function MyBookingsScreen({ navigation }: BookingScreenProps<'BookingList
         data={bookings}
         renderItem={renderBooking}
         keyExtractor={(item) => item.id}
-        numColumns={2}
-        columnWrapperStyle={styles.gridRow}
         contentContainerStyle={[
           styles.listContent,
-          (isError || (bookings.length === 0 && !isLoading)) && styles.listContentCentered
+          bookings.length === 0 && styles.listContentCentered
         ]}
         refreshControl={
           <RefreshControl
@@ -157,14 +154,7 @@ export function MyBookingsScreen({ navigation }: BookingScreenProps<'BookingList
           />
         }
         ListEmptyComponent={
-          isLoading ? (
-            <View style={styles.loadingContainer}>
-              <ActivityIndicator size="large" color={colors.primary} />
-              <Text style={[styles.loadingText, { color: colors.textSecondary }]}>
-                Loading bookings...
-              </Text>
-            </View>
-          ) : isError ? (
+          isError ? (
             <ErrorState
               title="Failed to load bookings"
               message={error?.message || 'Unable to fetch your bookings. Please try again.'}
@@ -191,19 +181,19 @@ const styles = StyleSheet.create({
   tab: { flex: 1, paddingVertical: 14, alignItems: 'center' },
   tabText: { fontSize: 15, fontWeight: '600' },
   listContent: { padding: 12, gap: 12 },
-  listContentCentered: { flexGrow: 1, justifyContent: 'center' },
+  listContentCentered: { flexGrow: 1, justifyContent: 'center', minHeight: 300 },
   loadingContainer: { alignItems: 'center', padding: 40, gap: 12 },
   loadingText: { fontSize: 14, marginTop: 8 },
   gridRow: { gap: 12, justifyContent: 'flex-start' },
-  bookingCard: { flex: 1, maxWidth: '48%', marginBottom: 0 },
+  bookingCard: { marginBottom: 12 },
   bookingHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
   statusIndicator: { width: 8, height: 8, borderRadius: 4 },
-  bookingTitle: { fontSize: 14, fontWeight: '600', marginBottom: 4 },
-  bookingMeta: { flexDirection: 'row', alignItems: 'center', gap: 4, marginBottom: 8 },
-  bookingRoom: { fontSize: 12, flex: 1 },
-  timeRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', borderRadius: 6, padding: 8, marginBottom: 6 },
+  bookingTitle: { fontSize: 15, fontWeight: '600', marginBottom: 6 },
+  bookingMeta: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 8 },
+  bookingRoom: { fontSize: 13, flex: 1 },
+  timeRow: { flexDirection: 'row', alignItems: 'center', borderRadius: 6, padding: 8, marginBottom: 4 },
   timeItem: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  timeText: { fontSize: 11, fontWeight: '500' },
-  cancelButton: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4, borderWidth: 1, borderRadius: 6, paddingVertical: 6 },
-  cancelText: { fontSize: 11, fontWeight: '600' },
+  timeText: { fontSize: 12, fontWeight: '500' },
+  cancelButton: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4, borderWidth: 1, borderRadius: 6, paddingVertical: 8, marginTop: 8 },
+  cancelText: { fontSize: 12, fontWeight: '600' },
 });

@@ -7,7 +7,6 @@ import {
   StyleSheet,
   TouchableOpacity,
   Animated,
-  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -187,12 +186,12 @@ export function DashboardScreen({ navigation }: MainTabScreenProps<'Dashboard'>)
     >
       <View style={styles.bookingHeader}>
         <View style={{ flex: 1 }}>
-          <Text style={[styles.bookingTitle, { color: colors.text }]} numberOfLines={1}>
+          <Text style={[styles.bookingTitle, { color: colors.text }]} numberOfLines={2}>
             {booking.title}
           </Text>
           <View style={styles.bookingMeta}>
             <Ionicons name="business-outline" size={14} color={colors.textSecondary} />
-            <Text style={[styles.bookingRoom, { color: colors.textSecondary }]}>
+            <Text style={[styles.bookingRoom, { color: colors.textSecondary }]} numberOfLines={1}>
               {booking.room.name}
             </Text>
           </View>
@@ -207,18 +206,15 @@ export function DashboardScreen({ navigation }: MainTabScreenProps<'Dashboard'>)
             {formatBookingDate(booking.startTime)}
           </Text>
         </View>
-        <View style={styles.bookingTimeItem}>
-          <Ionicons name="time-outline" size={16} color={colors.primary} />
-          <Text style={[styles.bookingTimeText, { color: colors.text }]}>
-            {formatBookingTime(booking.startTime, booking.endTime)}
-          </Text>
-        </View>
+        <Text style={[styles.bookingTimeText, { color: colors.text }]}>
+          {formatBookingTime(booking.startTime, booking.endTime)}
+        </Text>
       </View>
 
       {booking.attendees && booking.attendees.length > 0 && (
         <View style={styles.attendeesRow}>
           <Ionicons name="people-outline" size={14} color={colors.textSecondary} />
-          <Text style={[styles.attendeesText, { color: colors.textSecondary }]}>
+          <Text style={[styles.attendeesText, { color: colors.textSecondary }]} numberOfLines={1}>
             {booking.attendees.length} attendee{booking.attendees.length !== 1 ? 's' : ''}
           </Text>
         </View>
@@ -245,7 +241,7 @@ export function DashboardScreen({ navigation }: MainTabScreenProps<'Dashboard'>)
         </View>
       )}
       <ScrollView
-        contentContainerStyle={[styles.scrollContent, isLoading && styles.scrollContentLoading]}
+        contentContainerStyle={styles.scrollContent}
         refreshControl={
           <RefreshControl
             refreshing={isLoading}
@@ -256,17 +252,7 @@ export function DashboardScreen({ navigation }: MainTabScreenProps<'Dashboard'>)
         }
         showsVerticalScrollIndicator={false}
       >
-        {isLoading && !upcomingBookings?.data ? (
-          <View style={styles.loadingOverlay}>
-            <View style={[styles.loadingCard, { backgroundColor: colors.surface }]}>
-              <ActivityIndicator size="large" color={colors.primary} />
-              <Text style={[styles.loadingText, { color: colors.textSecondary }]}>
-                Loading your dashboard...
-              </Text>
-            </View>
-          </View>
-        ) : (
-          <>
+        <>
           {/* Imminent Meeting Banner - Like web app */}
         {imminentBooking && (
           <TouchableOpacity
@@ -454,8 +440,7 @@ export function DashboardScreen({ navigation }: MainTabScreenProps<'Dashboard'>)
             })
           )}
         </View>
-          </>
-        )}
+        </>
       </ScrollView>
     </SafeAreaView>
   );
@@ -787,24 +772,5 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '700',
     marginLeft: 4,
-  },
-  scrollContentLoading: {
-    minHeight: 300,
-  },
-  loadingOverlay: {
-    padding: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-    minHeight: 300,
-  },
-  loadingCard: {
-    padding: 32,
-    borderRadius: 16,
-    alignItems: 'center',
-    gap: 12,
-  },
-  loadingText: {
-    fontSize: 14,
-    marginTop: 8,
   },
 });

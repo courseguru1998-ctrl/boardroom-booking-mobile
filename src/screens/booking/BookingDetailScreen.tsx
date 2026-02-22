@@ -100,9 +100,11 @@ export function BookingDetailScreen({ route, navigation }: BookingScreenProps<'B
         </View>
 
         {/* Title & Description */}
-        <Text style={[styles.title, { color: colors.text }]}>{booking.title}</Text>
+        <Text style={[styles.title, { color: colors.text }]} numberOfLines={2}>
+          {booking.title}
+        </Text>
         {booking.description && (
-          <Text style={[styles.description, { color: colors.textSecondary }]}>
+          <Text style={[styles.description, { color: colors.textSecondary }]} numberOfLines={3}>
             {booking.description}
           </Text>
         )}
