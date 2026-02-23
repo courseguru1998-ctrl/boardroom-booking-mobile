@@ -140,11 +140,11 @@ export function BookingDetailScreen({ route, navigation }: BookingScreenProps<'B
             </View>
             <View style={{ flex: 1 }}>
               <Text style={[styles.detailLabel, { color: colors.textSecondary }]}>Room</Text>
-              <Text style={[styles.detailValue, { color: colors.text }]}>
+              <Text style={[styles.detailValue, { color: colors.text }]} numberOfLines={1}>
                 {booking.room.name}
               </Text>
               {(booking.room.building || booking.room.floor) && (
-                <Text style={[styles.detailSub, { color: colors.textTertiary }]}>
+                <Text style={[styles.detailSub, { color: colors.textTertiary }]} numberOfLines={1}>
                   {booking.room.building}
                   {booking.room.floor ? `, Floor ${booking.room.floor}` : ''}
                 </Text>
@@ -163,11 +163,11 @@ export function BookingDetailScreen({ route, navigation }: BookingScreenProps<'B
             </View>
             <View style={{ flex: 1 }}>
               <Text style={[styles.detailLabel, { color: colors.textSecondary }]}>Booked by</Text>
-              <Text style={[styles.detailValue, { color: colors.text }]}>
+              <Text style={[styles.detailValue, { color: colors.text }]} numberOfLines={1}>
                 {booking.user.firstName} {booking.user.lastName}
               </Text>
               {booking.user.email && (
-                <Text style={[styles.detailSub, { color: colors.textTertiary }]}>
+                <Text style={[styles.detailSub, { color: colors.textTertiary }]} numberOfLines={1}>
                   {booking.user.email}
                 </Text>
               )}
@@ -187,11 +187,11 @@ export function BookingDetailScreen({ route, navigation }: BookingScreenProps<'B
                   <View style={styles.attendeeRow}>
                     <View style={[styles.attendeeDot, { backgroundColor: colors.primary }]} />
                     <View>
-                      <Text style={[styles.attendeeName, { color: colors.text }]}>
+                      <Text style={[styles.attendeeName, { color: colors.text }]} numberOfLines={1}>
                         {attendee.name || attendee.email}
                       </Text>
                       {attendee.name && (
-                        <Text style={[styles.attendeeEmail, { color: colors.textTertiary }]}>
+                        <Text style={[styles.attendeeEmail, { color: colors.textTertiary }]} numberOfLines={1}>
                           {attendee.email}
                         </Text>
                       )}

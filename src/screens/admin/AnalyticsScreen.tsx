@@ -119,12 +119,12 @@ export function AnalyticsScreen() {
   ) => (
     <Card style={styles.statCard}>
       <View style={styles.statHeader}>
-        <Text style={[styles.statTitle, { color: colors.textSecondary }]}>{title}</Text>
+        <Text style={[styles.statTitle, { color: colors.textSecondary }]} numberOfLines={1}>{title}</Text>
         <View style={[styles.statIconContainer, { backgroundColor: `${color}15` }]}>
           <Ionicons name={icon} size={20} color={color} />
         </View>
       </View>
-      <Text style={[styles.statValue, { color: colors.text }]}>{value.toLocaleString()}</Text>
+      <Text style={[styles.statValue, { color: colors.text }]} numberOfLines={1}>{value.toLocaleString()}</Text>
     </Card>
   );
 
@@ -142,7 +142,7 @@ export function AnalyticsScreen() {
           </Text>
           <View style={styles.bookingMeta}>
             <Ionicons name="business-outline" size={14} color={colors.textSecondary} />
-            <Text style={[styles.bookingRoom, { color: colors.textSecondary }]}>
+            <Text style={[styles.bookingRoom, { color: colors.textSecondary }]} numberOfLines={1}>
               {booking.room.name}
             </Text>
           </View>
@@ -167,7 +167,7 @@ export function AnalyticsScreen() {
 
       <View style={styles.bookingUserRow}>
         <Ionicons name="person-outline" size={14} color={colors.textTertiary} />
-        <Text style={[styles.bookingUser, { color: colors.textTertiary }]}>
+        <Text style={[styles.bookingUser, { color: colors.textTertiary }]} numberOfLines={1}>
           {booking.user.firstName} {booking.user.lastName}
         </Text>
       </View>
@@ -184,9 +184,9 @@ export function AnalyticsScreen() {
       >
         {/* Header */}
         <View style={styles.header}>
-          <View>
-            <Text style={[styles.pageTitle, { color: colors.text }]}>Analytics</Text>
-            <Text style={[styles.pageSubtitle, { color: colors.textSecondary }]}>
+          <View style={{ flex: 1 }}>
+            <Text style={[styles.pageTitle, { color: colors.text }]} numberOfLines={1}>Analytics</Text>
+            <Text style={[styles.pageSubtitle, { color: colors.textSecondary }]} numberOfLines={2}>
               Room booking statistics and insights
             </Text>
           </View>

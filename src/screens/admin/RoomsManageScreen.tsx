@@ -272,7 +272,7 @@ export function RoomsManageScreen() {
           <Text style={[styles.roomName, { color: colors.text }]} numberOfLines={1}>
             {room.name}
           </Text>
-          <Text style={[styles.roomCampus, { color: colors.textSecondary }]}>
+          <Text style={[styles.roomCampus, { color: colors.textSecondary }]} numberOfLines={1}>
             {room.campus?.name || getCampusName(room.campusId)}
           </Text>
         </View>

@@ -288,6 +288,9 @@ export function DashboardScreen({ navigation }: MainTabScreenProps<'Dashboard'>)
             <View style={[styles.heroGlow2, { backgroundColor: 'rgba(255,255,255,0.05)' }]} />
           </View>
 
+          {/* JGI Watermark - Large background text */}
+          <Text style={styles.jgiWatermark}>JGI</Text>
+
           <View style={styles.heroContent}>
             {/* Greeting */}
             <View style={styles.greetingRow}>
@@ -504,6 +507,19 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
+  },
+  // JGI Watermark - Large background text
+  jgiWatermark: {
+    position: 'absolute',
+    bottom: -10,
+    right: 10,
+    fontSize: 140,
+    fontWeight: '800',
+    color: 'rgba(255, 255, 255, 0.06)',
+    textShadowColor: 'rgba(255, 255, 255, 0.03)',
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 20,
+    letterSpacing: 8,
   },
   heroGlow1: {
     position: 'absolute',

@@ -230,10 +230,10 @@ export function UsersScreen() {
             </Text>
           </View>
           <View style={styles.userInfo}>
-            <Text style={[styles.userName, { color: colors.text }]}>
+            <Text style={[styles.userName, { color: colors.text }]} numberOfLines={1}>
               {userItem.firstName} {userItem.lastName}
             </Text>
-            <Text style={[styles.userEmail, { color: colors.textSecondary }]}>
+            <Text style={[styles.userEmail, { color: colors.textSecondary }]} numberOfLines={1}>
               {userItem.email}
             </Text>
           </View>
@@ -252,7 +252,7 @@ export function UsersScreen() {
           {userItem.department && (
             <View style={styles.detailRow}>
               <Ionicons name="business-outline" size={16} color={colors.textTertiary} />
-              <Text style={[styles.detailText, { color: colors.textSecondary }]}>
+              <Text style={[styles.detailText, { color: colors.textSecondary }]} numberOfLines={1}>
                 {userItem.department}
               </Text>
             </View>
@@ -261,7 +261,7 @@ export function UsersScreen() {
           {userItem.campus && (
             <View style={styles.detailRow}>
               <Ionicons name="location-outline" size={16} color={colors.textTertiary} />
-              <Text style={[styles.detailText, { color: colors.textSecondary }]}>
+              <Text style={[styles.detailText, { color: colors.textSecondary }]} numberOfLines={1}>
                 {userItem.campus.name}
               </Text>
             </View>

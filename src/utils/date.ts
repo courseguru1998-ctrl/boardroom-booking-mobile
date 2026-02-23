@@ -29,6 +29,17 @@ export function getUtcDateRange(daysAhead: number = 30): { startDate: string; en
 }
 
 /**
+ * Get date range for past N days in UTC format
+ */
+export function getUtcPastDateRange(daysBack: number = 30): { startDate: string; endDate: string } {
+  const today = new Date();
+  return {
+    startDate: getUtcStartOfDay(addDays(today, -daysBack)),
+    endDate: getUtcEndOfDay(today),
+  };
+}
+
+/**
  * Format date for API query params (YYYY-MM-DD format)
  * Uses local date to ensure user sees their local timezone
  */

@@ -185,7 +185,7 @@ export function SettingsScreen({ navigation }: SettingsScreenProps<'SettingsMain
         </Text>
       </View>
       {value && (
-        <Text style={[styles.settingValue, { color: colors.textSecondary }]}>
+        <Text style={[styles.settingValue, { color: colors.textSecondary }]} numberOfLines={1}>
           {value}
         </Text>
       )}
@@ -210,14 +210,14 @@ export function SettingsScreen({ navigation }: SettingsScreenProps<'SettingsMain
               </Text>
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={[styles.profileName, { color: colors.text }]}>
+              <Text style={[styles.profileName, { color: colors.text }]} numberOfLines={1}>
                 {user?.firstName} {user?.lastName}
               </Text>
-              <Text style={[styles.profileEmail, { color: colors.textSecondary }]}>
+              <Text style={[styles.profileEmail, { color: colors.textSecondary }]} numberOfLines={1}>
                 {user?.email}
               </Text>
               {user?.department && (
-                <Text style={[styles.profileDept, { color: colors.textTertiary }]}>
+                <Text style={[styles.profileDept, { color: colors.textTertiary }]} numberOfLines={1}>
                   {user.department}
                 </Text>
               )}
@@ -558,6 +558,8 @@ const styles = StyleSheet.create({
   },
   settingValue: {
     fontSize: 14,
+    flex: 1,
+    textAlign: 'right',
   },
   divider: {
     height: 1,

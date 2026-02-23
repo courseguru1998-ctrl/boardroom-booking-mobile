@@ -14,7 +14,7 @@ import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '../../hooks/useTheme';
 import { useMyBookings, useCancelBooking } from '../../hooks/useBookings';
 import { Card, StatusBadge, Header, EmptyState, ErrorState } from '../../components/common';
-import { formatBookingDate, formatBookingTime, getUtcDateRange } from '../../utils/date';
+import { formatBookingDate, formatBookingTime, getUtcDateRange, getUtcPastDateRange } from '../../utils/date';
 import type { BookingScreenProps } from '../../navigation/types';
 import type { Booking } from '../../types';
 
@@ -34,7 +34,7 @@ export function MyBookingsScreen({ navigation }: BookingScreenProps<'BookingList
   const { data, isLoading, isError, error, refetch } = useMyBookings(
     isUpcoming
       ? getUtcDateRange(30) // Get next 30 days
-      : { endDate: now.toISOString() } // Past bookings
+      : getUtcPastDateRange(90) // Get past 90 days
   );
 
   const bookings = data?.data || [];
@@ -64,19 +64,18 @@ export function MyBookingsScreen({ navigation }: BookingScreenProps<'BookingList
       style={styles.bookingCard}
     >
       <View style={styles.bookingHeader}>
-        <View style={[styles.statusIndicator, { backgroundColor: booking.status === 'CONFIRMED' ? colors.success : colors.textTertiary }]} />
+        <View style={{ flex: 1, marginRight: 8 }}>
+          <Text style={[styles.bookingTitle, { color: colors.text }]} numberOfLines={2}>
+            {booking.title}
+          </Text>
+          <View style={styles.bookingMeta}>
+            <Ionicons name="business-outline" size={12} color={colors.textSecondary} />
+            <Text style={[styles.bookingRoom, { color: colors.textSecondary }]} numberOfLines={1}>
+              {booking.room.name}
+            </Text>
+          </View>
+        </View>
         <StatusBadge status={booking.status} size="sm" />
-      </View>
-
-      <Text style={[styles.bookingTitle, { color: colors.text }]} numberOfLines={2}>
-        {booking.title}
-      </Text>
-
-      <View style={styles.bookingMeta}>
-        <Ionicons name="business-outline" size={12} color={colors.textSecondary} />
-        <Text style={[styles.bookingRoom, { color: colors.textSecondary }]} numberOfLines={1}>
-          {booking.room.name}
-        </Text>
       </View>
 
       <View style={[styles.timeRow, { backgroundColor: colors.surfaceSecondary }]}>
@@ -185,10 +184,10 @@ const styles = StyleSheet.create({
   loadingContainer: { alignItems: 'center', padding: 40, gap: 12 },
   loadingText: { fontSize: 14, marginTop: 8 },
   gridRow: { gap: 12, justifyContent: 'flex-start' },
-  bookingCard: { marginBottom: 12 },
-  bookingHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
+  bookingCard: { marginBottom: 12, width: '100%' },
+  bookingHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 },
   statusIndicator: { width: 8, height: 8, borderRadius: 4 },
-  bookingTitle: { fontSize: 15, fontWeight: '600', marginBottom: 6 },
+  bookingTitle: { fontSize: 15, fontWeight: '600', marginBottom: 6, flex: 1, marginRight: 8 },
   bookingMeta: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 8 },
   bookingRoom: { fontSize: 13, flex: 1 },
   timeRow: { flexDirection: 'row', alignItems: 'center', borderRadius: 6, padding: 8, marginBottom: 4 },
