@@ -14,11 +14,22 @@ import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Ionicons } from '@expo/vector-icons';
-import { format, parseISO } from 'date-fns';
+import { format, parseISO, addWeeks, addMonths } from 'date-fns';
 import { useTheme } from '../../hooks/useTheme';
 import { useCreateBooking, useUpdateBooking, useBooking } from '../../hooks/useBookings';
 import { Button, Input, Card } from '../../components/common';
+import { notificationService } from '../../services/notifications';
 import type { RoomScreenProps, BookingScreenProps } from '../../navigation/types';
+
+type RecurrenceType = 'none' | 'daily' | 'weekly' | 'biweekly' | 'monthly';
+
+const RECURRENCE_OPTIONS: { value: RecurrenceType; label: string; icon: string }[] = [
+  { value: 'none', label: 'Does not repeat', icon: 'close-circle-outline' },
+  { value: 'daily', label: 'Every day', icon: 'today-outline' },
+  { value: 'weekly', label: 'Every week', icon: 'calendar-outline' },
+  { value: 'biweekly', label: 'Every 2 weeks', icon: 'calendar-outline' },
+  { value: 'monthly', label: 'Every month', icon: 'calendar-number-outline' },
+];
 
 const bookingSchema = z.object({
   title: z
@@ -61,6 +72,8 @@ export function CreateBookingScreen({ route, navigation }: CreateBookingScreenPr
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showStartPicker, setShowStartPicker] = useState(false);
   const [showEndPicker, setShowEndPicker] = useState(false);
+  const [recurrence, setRecurrence] = useState<RecurrenceType>('none');
+  const [showRecurrencePicker, setShowRecurrencePicker] = useState(false);
 
   // Initialize form with existing booking data when in edit mode
   useEffect(() => {
@@ -119,6 +132,18 @@ export function CreateBookingScreen({ route, navigation }: CreateBookingScreenPr
       return;
     }
 
+    // Build recurrence rule
+    let recurrenceRule: string | undefined;
+    if (recurrence !== 'none') {
+      const freqMap: Record<string, string> = {
+        daily: 'DAILY',
+        weekly: 'WEEKLY',
+        biweekly: 'WEEKLY;INTERVAL=2',
+        monthly: 'MONTHLY',
+      };
+      recurrenceRule = `FREQ=${freqMap[recurrence]}`;
+    }
+
     setLoading(true);
     try {
       if (isEditMode && bookingId) {
@@ -132,16 +157,36 @@ export function CreateBookingScreen({ route, navigation }: CreateBookingScreenPr
             endTime: end.toISOString(),
           },
         });
+        // Schedule notification for updated booking
+        await notificationService.scheduleBookingReminder(
+          bookingId,
+          data.title,
+          currentRoomName,
+          start,
+          15
+        );
         navigation.goBack();
       } else {
         // Create new booking
-        await createBooking.mutateAsync({
+        const result = await createBooking.mutateAsync({
           roomId: currentRoomId,
           title: data.title,
           description: data.description,
           startTime: start.toISOString(),
           endTime: end.toISOString(),
+          recurrenceRule,
         });
+
+        // Schedule notification for the new booking
+        if (result.data?.id) {
+          await notificationService.scheduleBookingReminder(
+            result.data.id,
+            data.title,
+            currentRoomName,
+            start,
+            15
+          );
+        }
         navigation.goBack();
       }
     } catch {
@@ -292,10 +337,64 @@ export function CreateBookingScreen({ route, navigation }: CreateBookingScreenPr
               )}
             </View>
           </View>
+
+          {/* Recurrence */}
+          <View style={styles.pickerSection}>
+            <Text style={[styles.pickerLabel, { color: colors.text }]}>Repeat</Text>
+            <TouchableOpacity
+              onPress={() => setShowRecurrencePicker(!showRecurrencePicker)}
+              style={[styles.pickerButton, { borderColor: colors.border, backgroundColor: colors.surface }]}
+            >
+              <Ionicons
+                name={RECURRENCE_OPTIONS.find(o => o.value === recurrence)?.icon as any || 'repeat-outline'}
+                size={18}
+                color={colors.primary}
+              />
+              <Text style={[styles.pickerValue, { color: colors.text, flex: 1 }]}>
+                {RECURRENCE_OPTIONS.find(o => o.value === recurrence)?.label || 'Does not repeat'}
+              </Text>
+              <Ionicons name="chevron-down-outline" size={18} color={colors.textTertiary} />
+            </TouchableOpacity>
+
+            {showRecurrencePicker && (
+              <View style={[styles.recurrenceOptions, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+                {RECURRENCE_OPTIONS.map((option) => (
+                  <TouchableOpacity
+                    key={option.value}
+                    onPress={() => {
+                      setRecurrence(option.value);
+                      setShowRecurrencePicker(false);
+                    }}
+                    style={[
+                      styles.recurrenceOption,
+                      recurrence === option.value && { backgroundColor: colors.primaryLight },
+                    ]}
+                  >
+                    <Ionicons
+                      name={option.icon as any}
+                      size={18}
+                      color={recurrence === option.value ? colors.primary : colors.textSecondary}
+                    />
+                    <Text
+                      style={[
+                        styles.recurrenceOptionText,
+                        { color: recurrence === option.value ? colors.primary : colors.text },
+                      ]}
+                    >
+                      {option.label}
+                    </Text>
+                    {recurrence === option.value && (
+                      <Ionicons name="checkmark" size={18} color={colors.primary} />
+                    )}
+                  </TouchableOpacity>
+                ))}
+              </View>
+            )}
+          </View>
         </View>
 
         <Button
-          title="Create Booking"
+          title={isEditMode ? 'Update Booking' : 'Create Booking'}
           onPress={handleSubmit(onSubmit)}
           loading={loading}
           fullWidth
@@ -320,4 +419,7 @@ const styles = StyleSheet.create({
   pickerButton: { flexDirection: 'row', alignItems: 'center', gap: 10, borderWidth: 1.5, borderRadius: 12, padding: 12 },
   pickerValue: { fontSize: 15, fontWeight: '500' },
   timeRow: { flexDirection: 'row', gap: 12, marginBottom: 16 },
+  recurrenceOptions: { marginTop: 8, borderWidth: 1, borderRadius: 12, overflow: 'hidden' },
+  recurrenceOption: { flexDirection: 'row', alignItems: 'center', gap: 10, padding: 14, borderBottomWidth: 1 },
+  recurrenceOptionText: { flex: 1, fontSize: 15 },
 });

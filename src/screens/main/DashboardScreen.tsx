@@ -121,9 +121,10 @@ export function DashboardScreen({ navigation }: MainTabScreenProps<'Dashboard'>)
         if (minutesUntil > 0 && minutesUntil <= 15 && !notifiedBookingsRef.current.has(booking.id)) {
           notifiedBookingsRef.current.add(booking.id);
 
+          const roomName = booking.room?.name || 'a room';
           const message = minutesUntil <= 1
-            ? `Starting now in ${booking.room.name}`
-            : `Starting in ${minutesUntil} minutes in ${booking.room.name}`;
+            ? `Starting now in ${roomName}`
+            : `Starting in ${minutesUntil} minutes in ${roomName}`;
 
           // Show toast notification
           toast.warning(`Upcoming: ${booking.title}`, message);
@@ -192,7 +193,7 @@ export function DashboardScreen({ navigation }: MainTabScreenProps<'Dashboard'>)
           <View style={styles.bookingMeta}>
             <Ionicons name="business-outline" size={14} color={colors.textSecondary} />
             <Text style={[styles.bookingRoom, { color: colors.textSecondary }]} numberOfLines={1}>
-              {booking.room.name}
+              {booking.room?.name || 'Room information unavailable'}
             </Text>
           </View>
         </View>

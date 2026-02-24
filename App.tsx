@@ -9,6 +9,7 @@ import { ErrorBoundary } from './src/components/common';
 import { ToastContainer } from './src/components/common/Toast';
 import { useThemeStore } from './src/store/theme';
 import { config } from './src/constants/config';
+import { notificationService } from './src/services/notifications';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -28,6 +29,12 @@ export default function App() {
   const effectiveTheme = getEffectiveTheme();
 
   useEffect(() => {
+    // Initialize notifications
+    const initNotifications = async () => {
+      await notificationService.initialize();
+    };
+    initNotifications();
+
     // Hide splash screen after app is ready
     const prepare = async () => {
       try {

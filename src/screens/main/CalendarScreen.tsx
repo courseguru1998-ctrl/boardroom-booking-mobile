@@ -327,7 +327,7 @@ export function CalendarScreen({ navigation }: MainTabScreenProps<'Calendar'>) {
             <View style={styles.bookingMeta}>
               <Ionicons name="business-outline" size={14} color={colors.textSecondary} />
               <Text style={[styles.bookingRoom, { color: colors.textSecondary }]}>
-                {booking.room.name}
+                {booking.room?.name || 'Room information unavailable'}
               </Text>
             </View>
           </View>

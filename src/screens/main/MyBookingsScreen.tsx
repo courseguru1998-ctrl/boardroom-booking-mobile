@@ -71,7 +71,7 @@ export function MyBookingsScreen({ navigation }: BookingScreenProps<'BookingList
           <View style={styles.bookingMeta}>
             <Ionicons name="business-outline" size={12} color={colors.textSecondary} />
             <Text style={[styles.bookingRoom, { color: colors.textSecondary }]} numberOfLines={1}>
-              {booking.room.name}
+              {booking.room?.name || 'Room information unavailable'}
             </Text>
           </View>
         </View>

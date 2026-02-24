@@ -141,12 +141,12 @@ export function BookingDetailScreen({ route, navigation }: BookingScreenProps<'B
             <View style={{ flex: 1 }}>
               <Text style={[styles.detailLabel, { color: colors.textSecondary }]}>Room</Text>
               <Text style={[styles.detailValue, { color: colors.text }]} numberOfLines={1}>
-                {booking.room.name}
+                {booking.room?.name || 'Room information unavailable'}
               </Text>
-              {(booking.room.building || booking.room.floor) && (
+              {(booking.room?.building || booking.room?.floor) && (
                 <Text style={[styles.detailSub, { color: colors.textTertiary }]} numberOfLines={1}>
-                  {booking.room.building}
-                  {booking.room.floor ? `, Floor ${booking.room.floor}` : ''}
+                  {booking.room?.building}
+                  {booking.room?.floor ? `, Floor ${booking.room.floor}` : ''}
                 </Text>
               )}
             </View>
